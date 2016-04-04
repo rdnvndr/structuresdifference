@@ -3,12 +3,19 @@
 
 #include <QObject>
 #import "libid:CDD8D735-102E-4C19-9892-5CB186D82CC4"
+#ifdef _DEBUG
+#include "debug/UniReference.tlh"
+#else
 #include "release/UniReference.tlh"
-//#include "debug/UniReference.tlh"
+#endif
 
 #import "libid:001D54E6-3572-405F-8794-79CE321C5F3D"
-#include "release/UniReference.tlh"
-//#include "debug/vkernel.tlh"
+#ifdef _DEBUG
+#include "debug/vkernel.tlh"
+#else
+#include "release/vkernel.tlh"
+#endif
+
 
 class StructuresDifference : public QObject
 {
@@ -28,6 +35,8 @@ public:
     QString childDiff(vkernelLib::IVClass *vClassSrc,
                       vkernelLib::IVClass *vClassDst);
     QString attrDiff(vkernelLib::IVClassValue *vAttrSrc,
+                     vkernelLib::IVClassValue *vAttrDst);
+    QString propDiff(vkernelLib::IVClassValue *vAttrSrc,
                      vkernelLib::IVClassValue *vAttrDst);
 
     QString groupsDiff(vkernelLib::IVModel *vModelSrc,

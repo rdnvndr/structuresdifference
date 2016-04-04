@@ -271,9 +271,9 @@ QString StructuresDifference::attrDiff(vkernelLib::IVClassValue *vAttrSrc, vkern
     } else {
         if (vAttrSrc->vrFunctionCode != vAttrDst->vrFunctionCode) {
             result = result + "\n        Код функции: изменён";
-            result = result + "\n" +"\""+ from_bstr_t(vAttrSrc->vrFunctionCode)+"\"";
-            result = result + "\n !=";
-            result = result + "\n" +"\"" + from_bstr_t(vAttrDst->vrFunctionCode)+"\"";
+//            result = result + "\n" +"\""+ from_bstr_t(vAttrSrc->vrFunctionCode)+"\"";
+//            result = result + "\n !=";
+//            result = result + "\n" +"\"" + from_bstr_t(vAttrDst->vrFunctionCode)+"\"";
         }
 
         if (vAttrSrc->vrCalcSetFunction != vAttrDst->vrCalcSetFunction)
@@ -313,8 +313,26 @@ QString StructuresDifference::attrDiff(vkernelLib::IVClassValue *vAttrSrc, vkern
                 + from_bstr_t(vAttrSrc->vrGroup) + " != "
                 + from_bstr_t(vAttrDst->vrGroup);
 
+    result += propDiff(vAttrSrc, vAttrDst);
+
     if (!result.isEmpty())
         result = "\n    "+ attrType +": " +  nameAttr + result;
+    return result;
+}
+
+QString StructuresDifference::propDiff(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
+{
+    QString result;
+    vkernelLib::IVProperties  *vPropsSrc = vAttrSrc->vrProperties();
+    vkernelLib::IVProperties  *vPropsDst = vAttrDst->vrProperties();
+    for (int i=0; i<vPropsSrc->vrCount(); i++) {
+        BSTR nameSrc;
+        VARIANT valueSrc;
+        vPropsSrc->vrItem(i, &nameSrc, &valueSrc);
+        VARIANT valueDst = vPropsDst->vrPropVal[nameSrc];
+        if (VarCmp(&valueDst, &valueSrc, LOCALE_USER_DEFAULT) != VARCMP_EQ)
+            result = result + "\n        Свойство \"" + from_bstr_t(nameSrc) +"\": изменено";
+    }
     return result;
 }
 
