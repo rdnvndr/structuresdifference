@@ -48,8 +48,8 @@ void MainWindow::runDiff()
          logPlainTextEdit->appendPlainText("Первый файл: " + m_firstFileName);
          logPlainTextEdit->appendPlainText("Второй файл: " + m_secondFileName);
          if (vModelDst!=NULL && vModelSrc!=NULL) {
-            logPlainTextEdit->appendPlainText(diffModel->groupsDiff(vModelSrc, vModelDst));
-            logPlainTextEdit->appendPlainText(diffModel->modelDiff(vModelSrc, vModelDst));
+            logPlainTextEdit->appendPlainText(diffModel->differenceAttrGroups(vModelSrc, vModelDst));
+            logPlainTextEdit->appendPlainText(diffModel->differenceModels(vModelSrc, vModelDst));
             logPlainTextEdit->appendPlainText("\nПроверка закончена");
          }
     } else

@@ -43,7 +43,7 @@ vkernelLib::IVModel *StructuresDifference::loadFile(QString filename)
          return NULL;
 }
 
-QString StructuresDifference::groupsDiff(vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst)
+QString StructuresDifference::differenceAttrGroups(vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst)
 {
     QString result;
     m_scrtSrc = vModelSrc->vrGetLocalSecurity();
@@ -70,7 +70,7 @@ QString StructuresDifference::groupsDiff(vkernelLib::IVModel *vModelSrc, vkernel
     return result;
 }
 
-QString StructuresDifference::classPermDiff(vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst)
+QString StructuresDifference::differenceClassPerms(vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst)
 {
     const int classPermMask = vkernelLib::SF_LCK
                             | vkernelLib::SF_WRT
@@ -108,7 +108,7 @@ QString StructuresDifference::classPermDiff(vkernelLib::IVClass *vClassSrc, vker
      return result;
 }
 
-QString StructuresDifference::attrPermDiff(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
+QString StructuresDifference::differenceAttrPerms(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
 {
     const int smplAttrPermMask = vkernelLib::SF_WRT
                                | vkernelLib::SF_VSB;
@@ -159,7 +159,7 @@ QString StructuresDifference::attrPermDiff(vkernelLib::IVClassValue *vAttrSrc, v
     return result;
 }
 
-QString StructuresDifference::objectsDiff(vkernelLib::IVObject *vObjectSrc,  vkernelLib::IVObject *vObjectDst)
+QString StructuresDifference::differenceObjects(vkernelLib::IVObject *vObjectSrc,  vkernelLib::IVObject *vObjectDst)
 {
     QString result;
     if (vObjectDst==NULL)
@@ -184,12 +184,12 @@ QString StructuresDifference::objectsDiff(vkernelLib::IVObject *vObjectSrc,  vke
                 + vObjectSrc->vrReadOnly + " != "
                 + vObjectDst->vrReadOnly;
 
-    result += childObjectsDiff(vObjectSrc, vObjectDst);
+    result += differenceObjectLinks(vObjectSrc, vObjectDst);
 
     for (int i=0; i<vObjectSrc->vrAttrCount(); i++) {
         vkernelLib::IVAttribute *attrSrc = vObjectSrc->vrAttrByIndex(i);
         vkernelLib::IVAttribute *attrDst = vObjectDst->vrAttrByName(attrSrc->vrName);
-        result += objectAttrDiff(attrSrc, attrDst);
+        result += differenceAttrObjects(attrSrc, attrDst);
     }
 
     if (!result.isEmpty())
@@ -200,7 +200,7 @@ QString StructuresDifference::objectsDiff(vkernelLib::IVObject *vObjectSrc,  vke
     return result;
 }
 
-QString StructuresDifference::childObjectsDiff(vkernelLib::IVObject *vObjectSrc ,vkernelLib::IVObject *vObjectDst)
+QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjectSrc ,vkernelLib::IVObject *vObjectDst)
 {
     QString result;
     vkernelLib::IVObjectVector *vObjsSrc = vObjectSrc->vrObjectsVector();
@@ -235,7 +235,7 @@ QString StructuresDifference::childObjectsDiff(vkernelLib::IVObject *vObjectSrc 
     return result;
 }
 
-QString StructuresDifference::objectAttrDiff(vkernelLib::IVAttribute *attrSrc,vkernelLib::IVAttribute *attrDst)
+QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *attrSrc,vkernelLib::IVAttribute *attrDst)
 {
     QString result;
 
@@ -270,7 +270,7 @@ QString StructuresDifference::objectAttrDiff(vkernelLib::IVAttribute *attrSrc,vk
     return result;
 }
 
-QString StructuresDifference::attrDiff(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst) {
+QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst) {
 
     QString result;
     QString attrType = "Неизвестынй объект";
@@ -306,7 +306,7 @@ QString StructuresDifference::attrDiff(vkernelLib::IVClassValue *vAttrSrc, vkern
     GUID baseClassGuidDst = (vInheritedAttrDst != NULL) ? vInheritedAttrDst->vrClassValueID : GUID_NULL;
 
     if (baseClassGuidSrc == GUID_NULL)
-        result += this->attrPermDiff(vAttrSrc, vAttrDst);
+        result += this->differenceAttrPerms(vAttrSrc, vAttrDst);
 
     bool sysFunc = vAttrSrc->vrType != 1
             && nameAttr.compare("showme", Qt::CaseInsensitive)==0
@@ -424,14 +424,14 @@ QString StructuresDifference::attrDiff(vkernelLib::IVClassValue *vAttrSrc, vkern
                 + from_bstr_t(vAttrSrc->vrGroup) + " != "
                 + from_bstr_t(vAttrDst->vrGroup);
 
-    result += propDiff(vAttrSrc, vAttrDst);
+    result += differencePropAttrs(vAttrSrc, vAttrDst);
 
     if (!result.isEmpty())
         result = "\n    "+ attrType +": " +  nameAttr + result;
     return result;
 }
 
-QString StructuresDifference::propDiff(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
+QString StructuresDifference::differencePropAttrs(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
 {
     QString result;
     vkernelLib::IVProperties  *vPropsSrc = vAttrSrc->vrProperties();
@@ -447,7 +447,7 @@ QString StructuresDifference::propDiff(vkernelLib::IVClassValue *vAttrSrc, vkern
     return result;
 }
 
-QString StructuresDifference::classDiff(vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst) {
+QString StructuresDifference::differenceClasses(vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst) {
 
     QString result;
     if (vClassDst == NULL) {
@@ -455,7 +455,7 @@ QString StructuresDifference::classDiff(vkernelLib::IVClass *vClassSrc, vkernelL
         return result;
     }
 
-    result += this->classPermDiff(vClassSrc, vClassDst);
+    result += this->differenceClassPerms(vClassSrc, vClassDst);
 
     if (vClassSrc->vrClassID != vClassDst->vrClassID) {
         result = result + "\n    Идентификатор: "
@@ -482,17 +482,17 @@ QString StructuresDifference::classDiff(vkernelLib::IVClass *vClassSrc, vkernelL
                 + from_guid(baseClassGuidSrc) + " != "
                 + from_guid(baseClassGuidDst);
 
-    result += childDiff(vClassSrc, vClassDst);
+    result += differenceClassLinks(vClassSrc, vClassDst);
 
     for (int j=0; j<vClassSrc->vrClassValuesCount(); j++){
         vkernelLib::IVClassValue *vAttrSrc = vClassSrc->vriClassValueItem(j);
         for (int k=0; k<vClassDst->vrClassValuesCount(); k++){
             vkernelLib::IVClassValue *vAttrDst = vClassDst->vriClassValueItem(k);
             if (vAttrSrc->vrName == vAttrDst->vrName) {
-                result += attrDiff(vAttrSrc, vAttrDst);
+                result += differenceAttrs(vAttrSrc, vAttrDst);
                 break;
             } else if (k == vClassDst->vrClassValuesCount()-1)
-                result += attrDiff(vAttrSrc, NULL);
+                result += differenceAttrs(vAttrSrc, NULL);
         }
     }
 
@@ -501,7 +501,7 @@ QString StructuresDifference::classDiff(vkernelLib::IVClass *vClassSrc, vkernelL
     return result;
 }
 
-QString StructuresDifference::childDiff(vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst)
+QString StructuresDifference::differenceClassLinks(vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst)
 {
     QString result;
     for (int i=0; i < vClassSrc->vrChildsCount(); i++){
@@ -515,7 +515,7 @@ QString StructuresDifference::childDiff(vkernelLib::IVClass *vClassSrc, vkernelL
     return result;
 }
 
-QString StructuresDifference::modelDiff (vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst) {
+QString StructuresDifference::differenceModels(vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst) {
     QString result;
 
     vkernelLib::IVClassVector *vClassVectorSrc = vModelSrc->vrGetClassVector();
@@ -523,21 +523,21 @@ QString StructuresDifference::modelDiff (vkernelLib::IVModel *vModelSrc, vkernel
     for (int i=0; i<vClassVectorSrc->vrCount(); i++){
         vkernelLib::IVClass *vClassSrc = vClassVectorSrc->vrItem(i);
         vkernelLib::IVClass *vClassDst = vClassVectorDst->vrLocate(vClassSrc->vrName);
-        result += classDiff(vClassSrc, vClassDst);
+        result += differenceClasses(vClassSrc, vClassDst);
     }
-    result += filterDiff(vModelSrc, vModelDst);
+    result += differenceFilters(vModelSrc, vModelDst);
     vkernelLib::IVObjectVector *vObjsSrc = vModelSrc->vrGetObjVector();
     vkernelLib::IVObjectVector *vObjsDst = vModelDst->vrGetObjVector();
     for (int i=0; i<vObjsSrc->vrObjectsCount(); i++) {
          vkernelLib::IVObject *vObjectSrc = vObjsSrc->vrItem(i);
          vkernelLib::IVObject *vObjectDst = vObjsDst->vrGetObjByStrID(vObjectSrc->vrObjStrID());
-         result += objectsDiff(vObjectSrc, vObjectDst);
+         result += differenceObjects(vObjectSrc, vObjectDst);
     }
 
     return result;
 }
 
-QString StructuresDifference::filterDiff (vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst) {
+QString StructuresDifference::differenceFilters (vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst) {
     QString result;
 
     vkernelLib::IVClassVector *vClassVectorSrc = vModelSrc->vrGetClassVector();

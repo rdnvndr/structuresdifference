@@ -26,32 +26,35 @@ public:
     bool connect();
     vkernelLib::IVModel *loadFile(QString filename);
 
-    QString modelDiff(vkernelLib::IVModel *vModelSrc,
-                      vkernelLib::IVModel *vModelDst);
-    QString filterDiff(vkernelLib::IVModel *vModelSrc,
-                      vkernelLib::IVModel *vModelDst);
-    QString classDiff(vkernelLib::IVClass *vClassSrc,
-                      vkernelLib::IVClass *vClassDst);
-    QString childDiff(vkernelLib::IVClass *vClassSrc,
-                      vkernelLib::IVClass *vClassDst);
-    QString attrDiff(vkernelLib::IVClassValue *vAttrSrc,
-                     vkernelLib::IVClassValue *vAttrDst);
-    QString propDiff(vkernelLib::IVClassValue *vAttrSrc,
-                     vkernelLib::IVClassValue *vAttrDst);
+    QString differenceModels(vkernelLib::IVModel *vModelSrc,
+                            vkernelLib::IVModel *vModelDst);
 
-    QString groupsDiff(vkernelLib::IVModel *vModelSrc,
-                       vkernelLib::IVModel *vModelDst);
-    QString classPermDiff(vkernelLib::IVClass *vClassSrc,
-                          vkernelLib::IVClass *vClassDst);
-    QString attrPermDiff(vkernelLib::IVClassValue *vAttrSrc,
-                         vkernelLib::IVClassValue *vAttrDst);
+    QString differenceClasses(vkernelLib::IVClass *vClassSrc,
+                              vkernelLib::IVClass *vClassDst);
+    QString differenceClassLinks(vkernelLib::IVClass *vClassSrc,
+                                 vkernelLib::IVClass *vClassDst);
+    QString differenceFilters(vkernelLib::IVModel *vModelSrc,
+                              vkernelLib::IVModel *vModelDst);
+    QString differenceClassPerms(vkernelLib::IVClass *vClassSrc,
+                                 vkernelLib::IVClass *vClassDst);
 
-    QString objectsDiff(vkernelLib::IVObject *vObjectSrc,
-                        vkernelLib::IVObject *vObjectDst);
-    QString childObjectsDiff(vkernelLib::IVObject *vObjectSrc,
-                             vkernelLib::IVObject *vObjectDst);
-    QString objectAttrDiff(vkernelLib::IVAttribute *attrSrc,
-                           vkernelLib::IVAttribute *attrDst);
+    QString differenceAttrs(vkernelLib::IVClassValue *vAttrSrc,
+                            vkernelLib::IVClassValue *vAttrDst);
+    QString differencePropAttrs(vkernelLib::IVClassValue *vAttrSrc,
+                                vkernelLib::IVClassValue *vAttrDst);
+    QString differenceAttrGroups(vkernelLib::IVModel *vModelSrc,
+                                 vkernelLib::IVModel *vModelDst);
+    QString differenceAttrPerms(vkernelLib::IVClassValue *vAttrSrc,
+                                vkernelLib::IVClassValue *vAttrDst);
+
+    QString differenceObjects(vkernelLib::IVObject *vObjectSrc,
+                              vkernelLib::IVObject *vObjectDst);
+    QString differenceAttrObjects(vkernelLib::IVAttribute *attrSrc,
+                                  vkernelLib::IVAttribute *attrDst);
+    QString differenceObjectLinks(vkernelLib::IVObject *vObjectSrc,
+                                  vkernelLib::IVObject *vObjectDst);
+
+
 private:
     UniReference::IUniRefer* uniRef;
 
