@@ -159,6 +159,111 @@ QString StructuresDifference::attrPermDiff(vkernelLib::IVClassValue *vAttrSrc, v
     return result;
 }
 
+QString StructuresDifference::objectsDiff(vkernelLib::IVObject *vObjectSrc,  vkernelLib::IVObject *vObjectDst)
+{
+    QString result;
+    if (vObjectDst==NULL)
+    {
+        result = result + "\n\nНе существует объект: "
+                + from_bstr_t(vObjectSrc->vrObjStrID());
+        return result;
+    }
+
+    if (vObjectSrc->vrObjStrID() != vObjectDst->vrObjStrID())
+        result = result + "\n    Идентификатор: "
+                + from_bstr_t(vObjectSrc->vrObjStrID()) + " != "
+                + from_bstr_t(vObjectDst->vrObjStrID());
+    if (vObjectSrc->vrOwnerID != vObjectDst->vrOwnerID)
+        result = result + "\n    Владелец: "
+                + from_bstr_t(vObjectSrc->vrOwnerID) + " != "
+                + from_bstr_t(vObjectDst->vrOwnerID);
+    if (vObjectSrc->vrWasChanged != vObjectDst->vrWasChanged)
+        result = result + "\n    Возможность изменения: изменено";
+    if (vObjectSrc->vrReadOnly != vObjectDst->vrReadOnly)
+        result = result + "\n    Только чтение: "
+                + vObjectSrc->vrReadOnly + " != "
+                + vObjectDst->vrReadOnly;
+
+//    result += childObjectsDiff(vObjectSrc, vObjectDst);
+
+    for (int i=0; i<vObjectSrc->vrAttrCount(); i++) {
+        vkernelLib::IVAttribute *attrSrc = vObjectSrc->vrAttrByIndex(i);
+        vkernelLib::IVAttribute *attrDst = vObjectDst->vrAttrByName(attrSrc->vrName);
+        result += objectAttrDiff(attrSrc, attrDst);
+    }
+
+    if (!result.isEmpty())
+        result = "\n\nОбъект: "
+                + from_bstr_t(vObjectSrc->vrObjStrID())
+                + result;
+
+    return result;
+}
+
+QString StructuresDifference::childObjectsDiff(vkernelLib::IVObject *vObjectSrc ,vkernelLib::IVObject *vObjectDst)
+{
+    QString result;
+    vkernelLib::IVObjectVector *vObjsSrc = vObjectSrc->vrObjectsVector();
+    vkernelLib::IVObjectVector *vObjsDst = vObjectDst->vrObjectsVector();
+
+    vkernelLib::IVIterator *vIterSrc = vObjsSrc->vrCreateIterator("", vObjectSrc, true);
+    vkernelLib::IVIterator *vIterDst = vObjsDst->vrCreateIterator("", vObjectDst, true);
+
+    for (bool flagSrc = vIterSrc->vrFirst(); flagSrc == true; flagSrc = vIterSrc->vrNext())
+    {
+        vkernelLib::IVObject *vChildObjectSrc =  vIterSrc->vrGetObject();
+        bool noneChild = true;
+        for (bool flagDst = vIterDst->vrFirst(); flagDst == true; flagDst = vIterDst->vrNext())
+        {
+            vkernelLib::IVObject *vChildObjectDst =  vIterDst->vrGetObject();
+            if (vChildObjectSrc->vrObjStrID()==vChildObjectDst->vrObjStrID()) {
+                noneChild = false;
+                break;
+            }
+        }
+        if (noneChild)
+              result = result + "\n    Дочерний объект не существует: "
+                      + from_bstr_t(vChildObjectSrc->vrObjStrID());
+    }
+
+    return result;
+}
+
+QString StructuresDifference::objectAttrDiff(vkernelLib::IVAttribute *attrSrc,vkernelLib::IVAttribute *attrDst)
+{
+    QString result;
+
+    if (attrDst==NULL) {
+        result = "\n    Не существует атрибут: " + from_bstr_t(attrSrc->vrName);
+        return result;
+    }
+    if (attrSrc->vrName != attrDst->vrName)
+        result = result + "\n        Наименование: "
+                + from_bstr_t(attrSrc->vrName) + " != "
+                + from_bstr_t(attrDst->vrName);
+    if (attrSrc->vrValue != attrDst->vrValue)
+        result = result + "\n        Значение изменено: \""
+                + from_variant_t(attrSrc->vrValue).toString() + "\" != \""
+                + from_variant_t(attrDst->vrValue).toString() + "\"";
+
+    if (attrSrc->vrMeasureUnit != attrDst->vrMeasureUnit)
+        result = result + "\n        ЕИ: "
+                + from_bstr_t(attrSrc->vrMeasureUnit) + " != "
+                + from_bstr_t(attrDst->vrMeasureUnit);
+    if (attrSrc->vrPrecision != attrDst->vrPrecision)
+        result = result + "\n        Точность: изменена";
+
+    if (attrSrc->vrOwnerID != attrDst->vrOwnerID)
+        result = result + "\n        Владелец: "
+                + from_bstr_t(attrSrc->vrOwnerID) + " != "
+                + from_bstr_t(attrDst->vrOwnerID);
+    if (!result.isEmpty())
+        result = "\n    Атрибут: "
+                + from_bstr_t(attrSrc->vrName)
+                + result;
+    return result;
+}
+
 QString StructuresDifference::attrDiff(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst) {
 
     QString result;
@@ -415,6 +520,14 @@ QString StructuresDifference::modelDiff (vkernelLib::IVModel *vModelSrc, vkernel
         result += classDiff(vClassSrc, vClassDst);
     }
     result += filterDiff(vModelSrc, vModelDst);
+    vkernelLib::IVObjectVector *vObjsSrc = vModelSrc->vrGetObjVector();
+    vkernelLib::IVObjectVector *vObjsDst = vModelDst->vrGetObjVector();
+    for (int i=0; i<vObjsSrc->vrObjectsCount(); i++) {
+         vkernelLib::IVObject *vObjectSrc = vObjsSrc->vrItem(i);
+         vkernelLib::IVObject *vObjectDst = vObjsDst->vrGetObjByStrID(vObjectSrc->vrObjStrID());
+         result += objectsDiff(vObjectSrc, vObjectDst);
+    }
+
     return result;
 }
 

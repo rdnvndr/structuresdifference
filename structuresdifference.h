@@ -45,6 +45,13 @@ public:
                           vkernelLib::IVClass *vClassDst);
     QString attrPermDiff(vkernelLib::IVClassValue *vAttrSrc,
                          vkernelLib::IVClassValue *vAttrDst);
+
+    QString objectsDiff(vkernelLib::IVObject *vObjectSrc,
+                        vkernelLib::IVObject *vObjectDst);
+    QString childObjectsDiff(vkernelLib::IVObject *vObjectSrc,
+                             vkernelLib::IVObject *vObjectDst);
+    QString objectAttrDiff(vkernelLib::IVAttribute *attrSrc,
+                           vkernelLib::IVAttribute *attrDst);
 private:
     UniReference::IUniRefer* uniRef;
 
