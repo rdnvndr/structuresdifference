@@ -54,6 +54,7 @@ void MainWindow::runDiff()
          }
     } else
         QMessageBox::warning(this, tr("Ошибка соединения"), tr("Ошибка соединения с сервером приложений"));
+    delete diffModel;
 }
 
 void MainWindow::openFirstFile()
