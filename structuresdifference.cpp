@@ -184,7 +184,7 @@ QString StructuresDifference::objectsDiff(vkernelLib::IVObject *vObjectSrc,  vke
                 + vObjectSrc->vrReadOnly + " != "
                 + vObjectDst->vrReadOnly;
 
-//    result += childObjectsDiff(vObjectSrc, vObjectDst);
+    result += childObjectsDiff(vObjectSrc, vObjectDst);
 
     for (int i=0; i<vObjectSrc->vrAttrCount(); i++) {
         vkernelLib::IVAttribute *attrSrc = vObjectSrc->vrAttrByIndex(i);
@@ -206,8 +206,13 @@ QString StructuresDifference::childObjectsDiff(vkernelLib::IVObject *vObjectSrc 
     vkernelLib::IVObjectVector *vObjsSrc = vObjectSrc->vrObjectsVector();
     vkernelLib::IVObjectVector *vObjsDst = vObjectDst->vrObjectsVector();
 
-    vkernelLib::IVIterator *vIterSrc = vObjsSrc->vrCreateIterator("", vObjectSrc, true);
-    vkernelLib::IVIterator *vIterDst = vObjsDst->vrCreateIterator("", vObjectDst, true);
+    vkernelLib::IVIterator *vIterSrc;
+    vkernelLib::IVIterator *vIterDst;
+    if (vObjsSrc->raw_vrCreateIterator(L"", vObjectSrc, true, &vIterSrc)!=S_OK)
+        return result;
+    if (vObjsDst->raw_vrCreateIterator(L"", vObjectSrc, true, &vIterDst)!=S_OK)
+        return "\n    Дочерние объекты не существуют";
+
 
     for (bool flagSrc = vIterSrc->vrFirst(); flagSrc == true; flagSrc = vIterSrc->vrNext())
     {
@@ -218,6 +223,7 @@ QString StructuresDifference::childObjectsDiff(vkernelLib::IVObject *vObjectSrc 
             vkernelLib::IVObject *vChildObjectDst =  vIterDst->vrGetObject();
             if (vChildObjectSrc->vrObjStrID()==vChildObjectDst->vrObjStrID()) {
                 noneChild = false;
+                result += vChildObjectSrc->vrObjStrID();
                 break;
             }
         }
