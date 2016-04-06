@@ -438,11 +438,14 @@ QString StructuresDifference::differencePropAttrs(vkernelLib::IVClassValue *vAtt
     vkernelLib::IVProperties  *vPropsDst = vAttrDst->vrProperties();
     for (int i=0; i<vPropsSrc->vrCount(); i++) {
         BSTR nameSrc;
-        VARIANT valueSrc;
-        vPropsSrc->vrItem(i, &nameSrc, &valueSrc);
-        VARIANT valueDst = vPropsDst->vrPropVal[nameSrc];
-        if (VarCmp(&valueDst, &valueSrc, LOCALE_USER_DEFAULT) != VARCMP_EQ)
-            result = result + "\n        Свойство \"" + from_bstr_t(nameSrc) +"\": изменено";
+        VARIANT tmp;
+        vPropsSrc->vrItem(i, &nameSrc, &tmp);
+        _variant_t valueDst = vPropsDst->vrPropVal[nameSrc];
+        _variant_t valueSrc = vPropsSrc->vrPropVal[nameSrc];
+        if (valueSrc != valueDst)
+            result = result + "\n        Свойство \"" + from_bstr_t(nameSrc) +"\" изменено: "
+                    + from_variant_t(valueSrc).toString() + " != "
+                    + from_variant_t(valueDst).toString();
     }
     return result;
 }
