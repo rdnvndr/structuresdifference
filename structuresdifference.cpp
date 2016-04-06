@@ -223,7 +223,6 @@ QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjec
             vkernelLib::IVObject *vChildObjectDst =  vIterDst->vrGetObject();
             if (vChildObjectSrc->vrObjStrID()==vChildObjectDst->vrObjStrID()) {
                 noneChild = false;
-                result += vChildObjectSrc->vrObjStrID();
                 break;
             }
         }
