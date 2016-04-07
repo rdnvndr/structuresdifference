@@ -234,6 +234,235 @@ QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjec
     return result;
 }
 
+bool StructuresDifference::differenceIDispatchs(_variant_t varSrc, _variant_t varDst, GUID dataType)
+{
+    const GUID ID_INT = to_guid("{DDF29044-F2DA-4457-9CA2-CA0F1E6501A6}");
+    const GUID ID_FLT = to_guid("{51AF1A06-C000-4ed4-940D-ADD3B199EB5E}");
+    const GUID ID_STR = to_guid("{751A3E7F-86DC-4527-91C8-79919F3B3FA3}");
+    const GUID ID_TEXT = to_guid("{B7672ACF-D5AA-4432-AA5C-ACF9FF8A27F7}");
+    const GUID ID_BOOL = to_guid("{1739DAD4-D175-4b0a-B2C7-55759916F7EF}");
+    const GUID ID_DATE = to_guid("{BDB20E23-B5D7-4966-8110-6F4EFD8764BB}");
+    const GUID ID_NULL = to_guid("{00000000-0000-0000-0000-000000000000}");
+    const GUID ID_FILE = to_guid("{2B02B52B-7C4A-40a7-845A-DA553A1B0DA1}");
+    const GUID ID_STREAM = to_guid("{F0CA433A-74E7-47b0-958C-CC1EBAC73DA8}");
+
+    const GUID ID_DIM = to_guid("{428CC298-47D3-4D09-8B7C-E6F36518C724}");
+    const GUID ID_ROUGHNESS = to_guid("{B6C89FE7-2B27-492C-962E-9940365E6201}");
+    const GUID ID_ANGLE = to_guid("{2FBF9A81-03B2-4AE8-BF46-3BE7240E7722}");
+    const GUID ID_MARKER = to_guid("{068E304F-E0C5-4B75-8785-B893CD910740}");
+    const GUID ID_VARIANT = to_guid("{EA1481CE-A241-47DB-BAB8-77EA17C51239}");
+    const GUID ID_THREAD = to_guid("{627AE639-7DBE-4420-880E-A1373F0CA4AF}");
+    const GUID ID_OBJECTSET = to_guid("{355A97C0-1066-406D-BDEE-46BE1C72EB4E}");
+    const GUID ID_FORMTOLERANCE = to_guid("{878CFC01-4EBD-4189-A0F8-A25C087394EA}");
+    const GUID ID_DEFLECTEDDOUBLE = to_guid("{34F029CE-71B9-433D-BD0C-A888750D1884}");
+
+    if (dataType == ID_DIM) {
+        vkernel_aLib::ISize *iObjSrc = from_vdispatch<vkernel_aLib::ISize>(varSrc);
+        vkernel_aLib::ISize *iObjDst = from_vdispatch<vkernel_aLib::ISize>(varDst);
+        if (iObjSrc && iObjDst) {
+            if (iObjSrc->vrValue != iObjDst->vrValue
+              || iObjSrc->vrBraces != iObjDst->vrBraces
+              || iObjSrc->vrEI != iObjSrc->vrEI
+              || iObjSrc->vrES != iObjSrc->vrES
+              || iObjSrc->vrFormType != iObjDst->vrFormType
+              || iObjSrc->vrFrame != iObjDst->vrFrame
+              || iObjSrc->vrQuality != iObjSrc->vrQuality
+              || iObjSrc->vrQualityNumber != iObjSrc->vrQualityNumber
+              || iObjSrc->vrQualityShow != iObjDst->vrQualityShow
+              || iObjSrc->vrQualityType != iObjDst->vrQualityType
+              || iObjSrc->vrShowDeflection != iObjSrc->vrShowDeflection
+              || iObjSrc->vrSpecialSymbol != iObjSrc->vrSpecialSymbol
+              || iObjSrc->vrTextAfter != iObjSrc->vrTextAfter
+              || iObjSrc->vrTextBefore != iObjSrc->vrTextBefore
+              || iObjSrc->vrTextValue != iObjSrc->vrTextValue
+              || iObjSrc->vrUnderline != iObjSrc->vrUnderline
+            )
+                return true;
+        } else return true;
+
+    }
+
+    if (dataType == ID_ROUGHNESS) {
+        vkernel_aLib::IRoughness *iObjSrc = from_vdispatch<vkernel_aLib::IRoughness>(varSrc);
+        vkernel_aLib::IRoughness *iObjDst = from_vdispatch<vkernel_aLib::IRoughness>(varDst);
+        if (iObjSrc && iObjDst) {
+             if (iObjSrc->vrRA != iObjDst->vrRA
+                     || iObjSrc->vrRoughClass != iObjDst->vrRoughClass
+                     || iObjSrc->vrRZ != iObjDst->vrRZ
+                     || iObjSrc->vrTextValue != iObjDst->vrTextValue
+                     || iObjSrc->vrUseRA != iObjDst->vrUseRA
+             )
+                  return true;
+        } else return true;
+
+    }
+
+    if (dataType == ID_ANGLE) {
+        vkernel_aLib::IAngle *iObjSrc = from_vdispatch<vkernel_aLib::IAngle>(varSrc);
+        vkernel_aLib::IAngle *iObjDst = from_vdispatch<vkernel_aLib::IAngle>(varDst);
+        if (iObjSrc && iObjDst) {
+             if (iObjSrc->vrBraces != iObjDst->vrBraces
+                     || iObjSrc->vrEI != iObjDst->vrEI
+                     || iObjSrc->vrES != iObjDst->vrES
+                     || iObjSrc->vrFrame != iObjDst->vrFrame
+                     || iObjSrc->vrShowDeflection != iObjDst->vrShowDeflection
+                     || iObjSrc->vrShowType != iObjDst->vrShowType
+                     || iObjSrc->vrTextAfter != iObjDst->vrTextAfter
+                     || iObjSrc->vrTextBefore != iObjDst->vrTextBefore
+                     || iObjSrc->vrTextValue != iObjDst->vrTextValue
+                     || iObjSrc->vrUnderline != iObjDst->vrUnderline
+                     || iObjSrc->vrValue != iObjDst->vrValue
+             )
+                  return true;
+        } else return true;
+    }
+
+    if (dataType == ID_MARKER) {
+        vkernel_aLib::IMarker *iObjSrc = from_vdispatch<vkernel_aLib::IMarker>(varSrc);
+        vkernel_aLib::IMarker *iObjDst = from_vdispatch<vkernel_aLib::IMarker>(varDst);
+        if (iObjSrc && iObjDst) {
+            if (iObjSrc->vrTextValue != iObjDst->vrTextValue
+                    || iObjSrc->vrValue != iObjDst->vrValue
+            )
+                 return true;
+        } else return true;
+
+    }
+
+    if (dataType == ID_VARIANT) {
+        vkernelLib::IVariant *iObjSrc = from_vdispatch<vkernelLib::IVariant>(varSrc);
+        vkernelLib::IVariant *iObjDst = from_vdispatch<vkernelLib::IVariant>(varDst);
+        if (iObjSrc && iObjDst) {
+            switch (iObjSrc->vrDataType) {
+            case vkernelLib::VARIANTDATATYPE::VRD_BOOL:
+                if (iObjSrc->vrBool != iObjDst->vrBool)
+                    return true;
+                break;
+            case vkernelLib::VARIANTDATATYPE::VRD_DATE:
+                if (iObjSrc->vrDate != iObjDst->vrDate)
+                    return true;
+                break;
+            case vkernelLib::VARIANTDATATYPE::VRD_FLT:
+                if (iObjSrc->vrFloat != iObjDst->vrFloat)
+                    return true;
+                break;
+            case vkernelLib::VARIANTDATATYPE::VRD_INT:
+                if (iObjSrc->vrInteger != iObjDst->vrInteger)
+                    return true;
+                break;
+            case vkernelLib::VARIANTDATATYPE::VRD_INTERFACE:
+                //iObjSrc->vrObject
+                return true;
+                break;
+            case vkernelLib::VARIANTDATATYPE::VRD_STR:
+                if (iObjSrc->vrString != iObjDst->vrString)
+                    return true;
+                break;
+            case vkernelLib::VARIANTDATATYPE::VRD_TEXT:
+                if (iObjSrc->vrString != iObjDst->vrString)
+                    return true;
+                break;
+            case vkernelLib::VARIANTDATATYPE::VRD_VARIANT:
+            default:
+                return differenceIDispatchs(iObjSrc->vrVariant, iObjDst->vrVariant,
+                                            iObjSrc->vrClassID);
+            }
+
+        } else return true;
+    }
+
+    if (dataType == ID_THREAD) {
+        vkernel_aLib::IThread *iObjSrc = from_vdispatch<vkernel_aLib::IThread>(varSrc);
+        vkernel_aLib::IThread *iObjDst = from_vdispatch<vkernel_aLib::IThread>(varDst);
+        if (iObjSrc && iObjDst) {
+             if (iObjSrc->vrCountStart != iObjDst->vrCountStart
+                     || iObjSrc->vrDExt != iObjDst->vrDExt
+                     || iObjSrc->vrDExtEi != iObjDst->vrDExtEi
+                     || iObjSrc->vrDExtEs != iObjDst->vrDExtEs
+                     || iObjSrc->vrDInt != iObjDst->vrDInt
+                     || iObjSrc->vrDIntEi != iObjDst->vrDIntEi
+                     || iObjSrc->vrDIntEs != iObjDst->vrDIntEs
+                     || iObjSrc->vrDMiddle != iObjDst->vrDMiddle
+                     || iObjSrc->vrDMiddleEi != iObjDst->vrDMiddleEi
+                     || iObjSrc->vrDMiddleEs != iObjDst->vrDMiddleEs
+                     || iObjSrc->vrLengthThread != iObjDst->vrLengthThread
+                     || iObjSrc->vrLengthwise != iObjDst->vrLengthwise
+                     || iObjSrc->vrLengthwiseNormally != iObjDst->vrLengthwiseNormally
+                     || iObjSrc->vrLengthwiseSmallerThread != iObjDst->vrLengthwiseSmallerThread
+                     || iObjSrc->vrOboznD != iObjDst->vrOboznD
+                     || iObjSrc->vrShiftBasePlane != iObjDst->vrShiftBasePlane
+                     || iObjSrc->vrStep != iObjDst->vrStep
+                     || iObjSrc->vrTextValue != iObjDst->vrTextValue
+                     || iObjSrc->vrTolerance != iObjDst->vrTolerance
+                     || iObjSrc->vrToleranceShiftBasePlane != iObjDst->vrToleranceShiftBasePlane
+                     || iObjSrc->vrType != iObjDst->vrType
+                     || iObjSrc->vrTypeForm != iObjDst->vrTypeForm
+                     || iObjSrc->vrTypeLR != iObjDst->vrTypeLR
+                     || iObjSrc->vrTypeStep != iObjDst->vrTypeStep
+                     || iObjSrc->vrValue != iObjDst->vrValue
+             )
+                  return true;
+        } else return true;
+
+    }
+
+    if (dataType == ID_OBJECTSET) {
+        vkernel_aLib::IObjectSet *iObjSrc = from_vdispatch<vkernel_aLib::IObjectSet>(varSrc);
+        vkernel_aLib::IObjectSet *iObjDst = from_vdispatch<vkernel_aLib::IObjectSet>(varDst);
+        if (iObjSrc && iObjDst) {
+            for (int i = 0; i < iObjSrc->vrSize(); i++) {
+                _bstr_t guidSrc = iObjSrc->vrObjectStr(i);
+                for (int j = 0; j < iObjDst->vrSize(); j++) {
+                    _bstr_t guidDst = iObjDst->vrObjectStr(j);
+                    if (guidSrc == guidDst)
+                        break;
+                    if (j == iObjDst->vrSize()-1)
+                        return true;
+                }
+            }
+        } else return true;
+    }
+
+    if (dataType == ID_FORMTOLERANCE) {
+        vkernel_aLib::IFormTolerance *iObjSrc = from_vdispatch<vkernel_aLib::IFormTolerance>(varSrc);
+        vkernel_aLib::IFormTolerance *iObjDst = from_vdispatch<vkernel_aLib::IFormTolerance>(varDst);
+        if (iObjSrc && iObjDst) {
+             if (iObjSrc->vrBase1 != iObjDst->vrBase1
+                     || iObjSrc->vrBase2 != iObjDst->vrBase2
+                     || iObjSrc->vrBaseCode1 != iObjDst->vrBaseCode1
+                     || iObjSrc->vrBaseCode2 != iObjDst->vrBaseCode2
+                     || iObjSrc->vrLengthwise != iObjDst->vrLengthwise
+                     || iObjSrc->vrSymbol != iObjDst->vrSymbol
+                     || iObjSrc->vrSymbolAdded != iObjDst->vrSymbolAdded
+                     || iObjSrc->vrTextAfter != iObjDst->vrTextAfter
+                     || iObjSrc->vrTextBefore != iObjDst->vrTextBefore
+                     || iObjSrc->vrTextValue != iObjDst->vrTextValue
+                     || iObjSrc->vrType != iObjDst->vrType
+                     || iObjSrc->vrTypeAdded != iObjDst->vrTypeAdded
+                     || iObjSrc->vrValue != iObjDst->vrValue
+             )
+                  return true;
+        } else return true;
+    }
+
+    if (dataType == ID_DEFLECTEDDOUBLE) {
+        vkernel_aLib::IDeflectedDouble *iObjSrc = from_vdispatch<vkernel_aLib::IDeflectedDouble>(varSrc);
+        vkernel_aLib::IDeflectedDouble *iObjDst = from_vdispatch<vkernel_aLib::IDeflectedDouble>(varDst);
+        if (iObjSrc && iObjDst) {
+            if (iObjSrc->vrEI != iObjDst->vrEI
+                    || iObjSrc->vrES != iObjDst->vrES
+                    || iObjSrc->vrShowDeflection != iObjDst->vrShowDeflection
+                    || iObjSrc->vrTextValue != iObjDst->vrTextValue
+                    || iObjSrc->vrValue != iObjDst->vrValue
+            )
+                 return true;
+        } else return true;
+
+    }
+
+    return false;
+}
+
 QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *attrSrc,vkernelLib::IVAttribute *attrDst)
 {
     QString result;
@@ -246,10 +475,18 @@ QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *att
         result = result + "\n        Наименование: "
                 + from_bstr_t(attrSrc->vrName) + " != "
                 + from_bstr_t(attrDst->vrName);
-    if (attrSrc->vrValue != attrDst->vrValue)
-        result = result + "\n        Значение изменено: \""
-                + from_variant_t(attrSrc->vrValue).toString() + "\" != \""
-                + from_variant_t(attrDst->vrValue).toString() + "\"";
+    if (attrSrc->vrValue != attrDst->vrValue) {
+        if (attrSrc->vrValue.vt & VT_DISPATCH) {
+            if (differenceIDispatchs(attrSrc->vrValue,
+                                    attrDst->vrValue,
+                                    attrSrc->vrClassValue()->GetvrDataType()))
+                result = result + "\n        Значение изменено";
+
+        } else
+            result = result + "\n        Значение изменено: \""
+                    + from_variant_t(attrSrc->vrValue).toString() + "\" != \""
+                    + from_variant_t(attrDst->vrValue).toString() + "\"";
+    }
 
     if (attrSrc->vrMeasureUnit != attrDst->vrMeasureUnit)
         result = result + "\n        ЕИ: "

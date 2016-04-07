@@ -5,6 +5,20 @@
 #include <comutil.h>
 #include <windows.h>
 
+GUID to_guid(QString suuid);
+QString from_guid(GUID guid);
+
+template< class T >
+T *from_vdispatch(variant_t arg) {
+    IDispatch *disp = to_dispatch(arg);
+    T *iObj = 0;
+    if (disp)
+        disp->QueryInterface(__uuidof(T), (void**)&iObj);
+    return iObj;
+}
+
+IDispatch* to_dispatch(_variant_t arg);
+
 //! Конвертирование из QString в LPWSTR
 LPWSTR toLPWSTR(QString str);
 

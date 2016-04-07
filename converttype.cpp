@@ -1,6 +1,17 @@
 #include "converttype.h"
 #include <QUuid>
 
+IDispatch* to_dispatch(_variant_t arg) {
+    IDispatch *disp = 0;
+    if (arg.vt & VT_DISPATCH) {
+        if (arg.vt & VT_BYREF)
+            disp = *arg.ppdispVal;
+        else
+            disp = arg.pdispVal;
+    }
+    return disp;
+}
+
 LPWSTR toLPWSTR(QString str){
  return (LPWSTR)(str.utf16());
 }
@@ -8,6 +19,17 @@ LPWSTR toLPWSTR(QString str){
 QString from_guid(GUID guid) {
     QUuid uuid(guid);
     return uuid.toString();
+}
+
+GUID to_guid(QString suuid) {
+    QUuid uuid(suuid);
+    GUID guid;
+    guid.Data1 = uuid.data1;
+    guid.Data2 = uuid.data2;
+    guid.Data3 = uuid.data3;
+    for (int i=0;i<8;i++)
+        guid.Data4[i] = uuid.data4[i];
+    return guid;
 }
 
 _bstr_t to_bstr_t(QString str){

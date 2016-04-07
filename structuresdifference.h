@@ -16,6 +16,12 @@
 #include "release/vkernel.tlh"
 #endif
 
+#import "libid:75BC526D-D630-4F45-93E2-0E2545098768"
+#ifdef _DEBUG
+#include "debug/vkernel_a.tlh"
+#else
+#include "release/vkernel_a.tlh"
+#endif
 
 class StructuresDifference : public QObject
 {
@@ -54,6 +60,7 @@ public:
     QString differenceObjectLinks(vkernelLib::IVObject *vObjectSrc,
                                   vkernelLib::IVObject *vObjectDst);
 
+    bool differenceIDispatchs(_variant_t varSrc, _variant_t varDst, GUID dataType);
 
 private:
     UniReference::IUniRefer* uniRef;
