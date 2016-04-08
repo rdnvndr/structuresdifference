@@ -2,6 +2,7 @@
 #include "converttype.h"
 #include <QString>
 #include <QDebug>
+#include <QFile>
 
 const GUID GUID_NULL = { 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0 } };
 
@@ -403,7 +404,6 @@ bool StructuresDifference::differenceIDispatchs(_variant_t varSrc, _variant_t va
              )
                   return true;
         } else return true;
-
     }
 
     if (dataType == ID_OBJECTSET) {
@@ -457,7 +457,39 @@ bool StructuresDifference::differenceIDispatchs(_variant_t varSrc, _variant_t va
             )
                  return true;
         } else return true;
+    }
 
+    if (dataType == ID_FILE) {
+        vkernelLib::IVFile *iObjSrc = from_vdispatch<vkernelLib::IVFile>(varSrc);
+        vkernelLib::IVFile *iObjDst = from_vdispatch<vkernelLib::IVFile>(varDst);
+
+        if (iObjSrc && iObjDst) {
+            QFile fileSrc(from_bstr_t(iObjSrc->vsInternalFullName));
+            QFile fileDst(from_bstr_t(iObjDst->vsInternalFullName));
+            bool openedSrc = fileSrc.open(QIODevice::ReadOnly);
+            bool openedDst = fileDst.open(QIODevice::ReadOnly);
+            if (openedSrc) {
+                if (openedDst) {
+                    while (!fileSrc.atEnd() && !fileDst.atEnd()) {
+                        QByteArray arrSrc = fileSrc.read(1024000);
+                        QByteArray arrDst = fileDst.read(1024000);
+                        if (arrSrc!=arrDst) {
+                            fileSrc.close();
+                            fileDst.close();
+                            return true;
+                        }
+                    }
+                    fileDst.close();
+                } else {
+                    fileSrc.close();
+                    return true;
+                }
+                fileSrc.close();
+            } else if (openedDst) {
+                fileDst.close();
+                return true;
+            }
+        }
     }
 
     return false;
