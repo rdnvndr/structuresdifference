@@ -165,7 +165,8 @@ QString StructuresDifference::differenceObjects(vkernelLib::IVObject *vObjectSrc
     QString result;
     if (vObjectDst==NULL)
     {
-        result = result + "\n\nНе существует объект: "
+        result = result + "\n\nНе существует объект класса \""
+                + from_bstr_t(vObjectSrc->vrClass()->vrName)+ "\": "
                 + from_bstr_t(vObjectSrc->vrObjStrID());
         return result;
     }
@@ -194,7 +195,8 @@ QString StructuresDifference::differenceObjects(vkernelLib::IVObject *vObjectSrc
     }
 
     if (!result.isEmpty())
-        result = "\n\nОбъект: "
+        result = "\n\nОбъект класса \""
+                + from_bstr_t(vObjectSrc->vrClass()->vrName)+ "\": "
                 + from_bstr_t(vObjectSrc->vrObjStrID())
                 + result;
 
@@ -228,7 +230,8 @@ QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjec
             }
         }
         if (noneChild)
-              result = result + "\n    Дочерний объект не существует: "
+              result = result + "\n    Дочерний объект класса \""
+                      + from_bstr_t(vObjectSrc->vrClass()->vrName)+ "\" не существует: "
                       + from_bstr_t(vChildObjectSrc->vrObjStrID());
     }
 
@@ -541,7 +544,7 @@ QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *att
 QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst) {
 
     QString result;
-    QString attrType = "Неизвестынй объект";
+    QString attrType = "Неизвестынй тип атрибута";
     switch (vAttrSrc->vrType) {
         case 0: attrType = "Атрибут";
                 break;
