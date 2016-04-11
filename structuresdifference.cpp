@@ -12,6 +12,45 @@ StructuresDifference::StructuresDifference(QObject *parent) : QObject(parent)
     ::CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_NONE,
                            RPC_C_IMP_LEVEL_DELEGATE, NULL, 0, NULL);
     uniRef = NULL;
+
+    m_classId = true;
+    m_classBlocked = true;
+    m_classScreenName = true;
+    m_classBaseClass  = true;
+    m_classChild = true;
+    m_classFilter = true;
+    m_classPerms = true;
+    m_permGroup = true;
+
+    m_attrId = true;
+    m_attrDataType = true;
+    m_attrType = true;
+    m_attrScreenName = true;
+    m_attrAliasName = true;
+    m_attrFuncRead = true;
+    m_attrFuncWrite = true;
+    m_attrBlocked = true;
+    m_attrMeasureUnit = true;
+    m_attrMeasureEntity = true;
+    m_attrForbidInput = true;
+    m_attrBaseClass = true;
+    m_attrPrecision = true;
+    m_attrGroup = true;
+    m_attrProp = true;
+    m_attrPerms = true;
+
+    m_objId = true;
+    m_objOwnerId = true;
+    m_objWasChanged = true;
+    m_objReadOnly = true;
+    m_objChilds = true;
+
+    m_objAttrName = true;
+    m_objAttrValue = true;
+    m_objAttrMeasureUnit = true;
+    m_objAttrPrecision = true;
+    m_objAttrOwnerId = true;
+
 }
 
 bool StructuresDifference::connect()
@@ -47,6 +86,7 @@ vkernelLib::IVModel *StructuresDifference::loadFile(QString filename)
 QString StructuresDifference::differenceAttrGroups(vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst)
 {
     QString result;
+
     m_scrtSrc = vModelSrc->vrGetLocalSecurity();
     m_scrtDst = vModelDst->vrGetLocalSecurity();
     for (int i= 0;i < uniRef->GlobalVars()->Logon()->ListGroupsUser()->CountGroupsUser; i++)
@@ -58,9 +98,10 @@ QString StructuresDifference::differenceAttrGroups(vkernelLib::IVModel *vModelSr
 
         if (groupIdSrc==0 || groupIdDst==0) {
 
-            result = result + "\nНе существует группа: "
-                    + groupName + "("
-                    + groupGuid + ")";
+            if (!m_permGroup)
+                result = result + "\nНе существует группа: "
+                        + groupName + "("
+                        + groupGuid + ")";
             continue;
         }
 
@@ -73,6 +114,8 @@ QString StructuresDifference::differenceAttrGroups(vkernelLib::IVModel *vModelSr
 
 QString StructuresDifference::differenceClassPerms(vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst)
 {
+    if (!m_classPerms) return "";
+
     const int classPermMask = vkernelLib::SF_LCK
                             | vkernelLib::SF_WRT
                             | vkernelLib::SF_VSB
@@ -111,6 +154,8 @@ QString StructuresDifference::differenceClassPerms(vkernelLib::IVClass *vClassSr
 
 QString StructuresDifference::differenceAttrPerms(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
 {
+    if (!m_attrPerms) return "";
+
     const int smplAttrPermMask = vkernelLib::SF_WRT
                                | vkernelLib::SF_VSB;
 
@@ -171,28 +216,37 @@ QString StructuresDifference::differenceObjects(vkernelLib::IVObject *vObjectSrc
         return result;
     }
 
-    if (vObjectSrc->vrObjStrID() != vObjectDst->vrObjStrID())
+    if (vObjectSrc->vrObjStrID() != vObjectDst->vrObjStrID() && m_objId)
         result = result + "\n    Идентификатор: "
                 + from_bstr_t(vObjectSrc->vrObjStrID()) + " != "
                 + from_bstr_t(vObjectDst->vrObjStrID());
-    if (vObjectSrc->vrOwnerID != vObjectDst->vrOwnerID)
+    if (vObjectSrc->vrOwnerID != vObjectDst->vrOwnerID && m_objOwnerId)
         result = result + "\n    Владелец: "
                 + from_bstr_t(vObjectSrc->vrOwnerID) + " != "
                 + from_bstr_t(vObjectDst->vrOwnerID);
-    if (vObjectSrc->vrWasChanged != vObjectDst->vrWasChanged)
+    if (vObjectSrc->vrWasChanged != vObjectDst->vrWasChanged && m_objWasChanged)
         result = result + "\n    Возможность изменения: изменено";
-    if (vObjectSrc->vrReadOnly != vObjectDst->vrReadOnly)
+    if (vObjectSrc->vrReadOnly != vObjectDst->vrReadOnly && m_objReadOnly)
         result = result + "\n    Только чтение: "
                 + vObjectSrc->vrReadOnly + " != "
                 + vObjectDst->vrReadOnly;
 
     result += differenceObjectLinks(vObjectSrc, vObjectDst);
 
-    for (int i=0; i<vObjectSrc->vrAttrCount(); i++) {
-        vkernelLib::IVAttribute *attrSrc = vObjectSrc->vrAttrByIndex(i);
-        vkernelLib::IVAttribute *attrDst = vObjectDst->vrAttrByName(attrSrc->vrName);
-        result += differenceAttrObjects(attrSrc, attrDst);
-    }
+    if (m_objAttrName || m_objAttrValue || m_objAttrMeasureUnit
+            || m_objAttrPrecision || m_objAttrOwnerId)
+        for (int i=0; i<vObjectSrc->vrAttrCount(); i++) {
+            vkernelLib::IVAttribute *attrSrc = vObjectSrc->vrAttrByIndex(i);
+            for (int j=0; j<vObjectDst->vrAttrCount(); j++) {
+                vkernelLib::IVAttribute *attrDst = vObjectDst->vrAttrByIndex(j);
+                if (attrSrc->vrName == attrDst->vrName) {
+                    result += differenceAttrObjects(attrSrc, attrDst);
+                    break;
+                }
+                if (j==vObjectDst->vrAttrCount()-1)
+                    result = "\n    Не существует атрибут: " + from_bstr_t(attrSrc->vrName);
+            }
+        }
 
     if (!result.isEmpty())
         result = "\n\nОбъект класса \""
@@ -205,6 +259,8 @@ QString StructuresDifference::differenceObjects(vkernelLib::IVObject *vObjectSrc
 
 QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjectSrc ,vkernelLib::IVObject *vObjectDst)
 {
+    if (!m_objChilds) return "";
+
     QString result;
     vkernelLib::IVObjectVector *vObjsSrc = vObjectSrc->vrObjectsVector();
     vkernelLib::IVObjectVector *vObjsDst = vObjectDst->vrObjectsVector();
@@ -467,10 +523,16 @@ bool StructuresDifference::differenceIDispatchs(_variant_t varSrc, _variant_t va
         vkernelLib::IVFile *iObjDst = from_vdispatch<vkernelLib::IVFile>(varDst);
 
         if (iObjSrc && iObjDst) {
-            QFile fileSrc(from_bstr_t(iObjSrc->vsInternalFullName));
-            QFile fileDst(from_bstr_t(iObjDst->vsInternalFullName));
-            bool openedSrc = fileSrc.open(QIODevice::ReadOnly);
-            bool openedDst = fileDst.open(QIODevice::ReadOnly);
+            bool openedSrc = false;
+            bool openedDst = false;
+
+            QString filenameSrc(from_bstr_t(iObjSrc->vsInternalFullName));
+            QString filenameDst(from_bstr_t(iObjDst->vsInternalFullName));
+            QFile fileSrc(filenameSrc);
+            QFile fileDst(filenameDst);
+
+            if (fileSrc.exists()) openedSrc = fileSrc.open(QIODevice::ReadOnly);
+            if (fileDst.exists()) openedDst = fileDst.open(QIODevice::ReadOnly);
             if (openedSrc) {
                 if (openedDst) {
                     while (!fileSrc.atEnd() && !fileDst.atEnd()) {
@@ -498,6 +560,346 @@ bool StructuresDifference::differenceIDispatchs(_variant_t varSrc, _variant_t va
     return false;
 }
 
+bool StructuresDifference::classId() const
+{
+    return m_classId;
+}
+
+void StructuresDifference::setClassId(bool classId)
+{
+    m_classId = classId;
+}
+
+bool StructuresDifference::classBlocked() const
+{
+    return m_classBlocked;
+}
+
+void StructuresDifference::setClassBlocked(bool classBlocked)
+{
+    m_classBlocked = classBlocked;
+}
+
+bool StructuresDifference::classScreenName() const
+{
+    return m_classScreenName;
+}
+
+void StructuresDifference::setClassScreenName(bool classScreenName)
+{
+    m_classScreenName = classScreenName;
+}
+
+bool StructuresDifference::classBaseClass() const
+{
+    return m_classBaseClass;
+}
+
+void StructuresDifference::setClassBaseClass(bool classBaseClass)
+{
+    m_classBaseClass = classBaseClass;
+}
+
+bool StructuresDifference::attrId() const
+{
+    return m_attrId;
+}
+
+void StructuresDifference::setAttrId(bool attrId)
+{
+    m_attrId = attrId;
+}
+
+bool StructuresDifference::attrDataType() const
+{
+    return m_attrDataType;
+}
+
+void StructuresDifference::setAttrDataType(bool attrDataType)
+{
+    m_attrDataType = attrDataType;
+}
+
+bool StructuresDifference::attrType() const
+{
+    return m_attrType;
+}
+
+void StructuresDifference::setAttrType(bool attrType)
+{
+    m_attrType = attrType;
+}
+
+bool StructuresDifference::attrScreenName() const
+{
+    return m_attrScreenName;
+}
+
+void StructuresDifference::setAttrScreenName(bool attrScreenName)
+{
+    m_attrScreenName = attrScreenName;
+}
+
+bool StructuresDifference::attrAliasName() const
+{
+    return m_attrAliasName;
+}
+
+void StructuresDifference::setAttrAliasName(bool attrAliasName)
+{
+    m_attrAliasName = attrAliasName;
+}
+
+bool StructuresDifference::attrFuncRead() const
+{
+    return m_attrFuncRead;
+}
+
+void StructuresDifference::setAttrFuncRead(bool attrFuncRead)
+{
+    m_attrFuncRead = attrFuncRead;
+}
+
+bool StructuresDifference::attrFuncWrite() const
+{
+    return m_attrFuncWrite;
+}
+
+void StructuresDifference::setAttrFuncWrite(bool attrFuncWrite)
+{
+    m_attrFuncWrite = attrFuncWrite;
+}
+
+bool StructuresDifference::attrBlocked() const
+{
+    return m_attrBlocked;
+}
+
+void StructuresDifference::setAttrBlocked(bool attrBlocked)
+{
+    m_attrBlocked = attrBlocked;
+}
+
+bool StructuresDifference::attrMeasureUnit() const
+{
+    return m_attrMeasureUnit;
+}
+
+void StructuresDifference::setAttrMeasureUnit(bool attrMeasureUnit)
+{
+    m_attrMeasureUnit = attrMeasureUnit;
+}
+
+bool StructuresDifference::attrMeasureEntity() const
+{
+    return m_attrMeasureEntity;
+}
+
+void StructuresDifference::setAttrMeasureEntity(bool attrMeasureEntity)
+{
+    m_attrMeasureEntity = attrMeasureEntity;
+}
+
+bool StructuresDifference::attrForbidInput() const
+{
+    return m_attrForbidInput;
+}
+
+void StructuresDifference::setAttrForbidInput(bool attrForbidInput)
+{
+    m_attrForbidInput = attrForbidInput;
+}
+
+bool StructuresDifference::attrBaseClass() const
+{
+    return m_attrBaseClass;
+}
+
+void StructuresDifference::setAttrBaseClass(bool attrBaseClass)
+{
+    m_attrBaseClass = attrBaseClass;
+}
+
+bool StructuresDifference::attrPrecision() const
+{
+    return m_attrPrecision;
+}
+
+void StructuresDifference::setAttrPrecision(bool attrPrecision)
+{
+    m_attrPrecision = attrPrecision;
+}
+
+bool StructuresDifference::attrGroup() const
+{
+    return m_attrGroup;
+}
+
+void StructuresDifference::setAttrGroup(bool attrGroup)
+{
+    m_attrGroup = attrGroup;
+}
+
+bool StructuresDifference::classChild() const
+{
+    return m_classChild;
+}
+
+void StructuresDifference::setClassChild(bool classChild)
+{
+    m_classChild = classChild;
+}
+
+bool StructuresDifference::classFilter() const
+{
+    return m_classFilter;
+}
+
+void StructuresDifference::setClassFilter(bool classFilter)
+{
+    m_classFilter = classFilter;
+}
+
+bool StructuresDifference::classPerms() const
+{
+    return m_classPerms;
+}
+
+void StructuresDifference::setClassPerms(bool classPerms)
+{
+    m_classPerms = classPerms;
+}
+
+bool StructuresDifference::attrProp() const
+{
+    return m_attrProp;
+}
+
+void StructuresDifference::setAttrProp(bool attrProp)
+{
+    m_attrProp = attrProp;
+}
+
+bool StructuresDifference::attrPerms() const
+{
+    return m_attrPerms;
+}
+
+void StructuresDifference::setAttrPerms(bool attrPerms)
+{
+    m_attrPerms = attrPerms;
+}
+
+bool StructuresDifference::permGroup() const
+{
+    return m_permGroup;
+}
+
+void StructuresDifference::setPermGroup(bool permGroup)
+{
+    m_permGroup = permGroup;
+}
+
+bool StructuresDifference::objId() const
+{
+    return m_objId;
+}
+
+void StructuresDifference::setObjId(bool objId)
+{
+    m_objId = objId;
+}
+
+bool StructuresDifference::objOwnerId() const
+{
+    return m_objOwnerId;
+}
+
+void StructuresDifference::setObjOwnerId(bool objOwnerId)
+{
+    m_objOwnerId = objOwnerId;
+}
+
+bool StructuresDifference::objWasChanged() const
+{
+    return m_objWasChanged;
+}
+
+void StructuresDifference::setObjWasChanged(bool objWasChanged)
+{
+    m_objWasChanged = objWasChanged;
+}
+
+bool StructuresDifference::objReadOnly() const
+{
+    return m_objReadOnly;
+}
+
+void StructuresDifference::setObjReadOnly(bool objReadOnly)
+{
+    m_objReadOnly = objReadOnly;
+}
+
+bool StructuresDifference::objAttrName() const
+{
+    return m_objAttrName;
+}
+
+void StructuresDifference::setObjAttrName(bool objAttrName)
+{
+    m_objAttrName = objAttrName;
+}
+
+bool StructuresDifference::objAttrValue() const
+{
+    return m_objAttrValue;
+}
+
+void StructuresDifference::setObjAttrValue(bool objAttrValue)
+{
+    m_objAttrValue = objAttrValue;
+}
+
+bool StructuresDifference::objAttrMeasureUnit() const
+{
+    return m_objAttrMeasureUnit;
+}
+
+void StructuresDifference::setObjAttrMeasureUnit(bool objAttrMeasureUnit)
+{
+    m_objAttrMeasureUnit = objAttrMeasureUnit;
+}
+
+bool StructuresDifference::objAttrPrecision() const
+{
+    return m_objAttrPrecision;
+}
+
+void StructuresDifference::setObjAttrPrecision(bool objAttrPrecision)
+{
+    m_objAttrPrecision = objAttrPrecision;
+}
+
+bool StructuresDifference::objAttrOwnerId() const
+{
+    return m_objAttrOwnerId;
+}
+
+void StructuresDifference::setObjAttrOwnerId(bool objAttrOwnerID)
+{
+    m_objAttrOwnerId = objAttrOwnerID;
+}
+
+bool StructuresDifference::objChilds() const
+{
+    return m_objChilds;
+}
+
+void StructuresDifference::setObjChilds(bool objChilds)
+{
+    m_objChilds = objChilds;
+}
+
 QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *attrSrc,vkernelLib::IVAttribute *attrDst)
 {
     QString result;
@@ -506,11 +908,11 @@ QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *att
         result = "\n    Не существует атрибут: " + from_bstr_t(attrSrc->vrName);
         return result;
     }
-    if (attrSrc->vrName != attrDst->vrName)
+    if (attrSrc->vrName != attrDst->vrName && m_objAttrName)
         result = result + "\n        Наименование: "
                 + from_bstr_t(attrSrc->vrName) + " != "
                 + from_bstr_t(attrDst->vrName);
-    if (attrSrc->vrValue != attrDst->vrValue) {
+    if (attrSrc->vrValue != attrDst->vrValue && m_objAttrValue) {
         if (attrSrc->vrValue.vt & VT_DISPATCH) {
             if (differenceIDispatchs(attrSrc->vrValue,
                                     attrDst->vrValue,
@@ -523,14 +925,14 @@ QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *att
                     + from_variant_t(attrDst->vrValue).toString() + "\"";
     }
 
-    if (attrSrc->vrMeasureUnit != attrDst->vrMeasureUnit)
+    if (attrSrc->vrMeasureUnit != attrDst->vrMeasureUnit && m_objAttrMeasureUnit)
         result = result + "\n        ЕИ: "
                 + from_bstr_t(attrSrc->vrMeasureUnit) + " != "
                 + from_bstr_t(attrDst->vrMeasureUnit);
-    if (attrSrc->vrPrecision != attrDst->vrPrecision)
+    if (attrSrc->vrPrecision != attrDst->vrPrecision && m_objAttrPrecision)
         result = result + "\n        Точность: изменена";
 
-    if (attrSrc->vrOwnerID != attrDst->vrOwnerID)
+    if (attrSrc->vrOwnerID != attrDst->vrOwnerID && m_objAttrOwnerId)
         result = result + "\n        Владелец: "
                 + from_bstr_t(attrSrc->vrOwnerID) + " != "
                 + from_bstr_t(attrDst->vrOwnerID);
@@ -588,27 +990,27 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
             && nameAttr.compare("afterupdate", Qt::CaseInsensitive)==0
             && nameAttr.compare("canchange", Qt::CaseInsensitive)==0
             && nameAttr.startsWith("diag_", Qt::CaseInsensitive)==0;
-    if (vAttrSrc->vrClassValueID != vAttrDst->vrClassValueID && sysFunc)
+    if (vAttrSrc->vrClassValueID != vAttrDst->vrClassValueID && sysFunc && m_attrId)
         result = result + "\n        Идентификатор: "
                + from_guid(vAttrSrc->vrClassValueID) + " != "
                + from_guid(vAttrDst->vrClassValueID);
 
-    if (vAttrSrc->GetvrDataType() !=  vAttrDst->GetvrDataType())
+    if (vAttrSrc->GetvrDataType() !=  vAttrDst->GetvrDataType() && m_attrDataType)
          result = result + "\n        Тип данных: "
                  + from_guid(vAttrSrc->GetvrDataType()) + " != "
                  + from_guid(vAttrDst->GetvrDataType());
 
-    if (vAttrSrc->vrType != vAttrDst->vrType)
+    if (vAttrSrc->vrType != vAttrDst->vrType && m_attrType)
         result = result + "\n        Тип атрибута: "
                 + vAttrSrc->vrType + " != "
                 + vAttrDst->vrType;
 
-    if (vAttrSrc->vrScreenName != vAttrDst->vrScreenName)
+    if (vAttrSrc->vrScreenName != vAttrDst->vrScreenName && m_attrScreenName)
         result = result + "\n        Экранное имя: "
                 + from_bstr_t(vAttrSrc->vrScreenName) + " != "
                 + from_bstr_t(vAttrDst->vrScreenName);
 
-    if (vAttrSrc->vrAliasName != vAttrDst->vrAliasName)
+    if (vAttrSrc->vrAliasName != vAttrDst->vrAliasName && m_attrAliasName)
         result = result + "\n        Справочники: "
                 + from_bstr_t(vAttrSrc->vrAliasName) + " != "
                 + from_bstr_t(vAttrDst->vrAliasName);
@@ -630,7 +1032,7 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
             if (vAttrCodeDst->vrName == vAttrDst->vrFunctionCode)
                 break;
         }
-        if (vAttrCodeSrc != NULL && vAttrCodeDst != NULL)
+        if (vAttrCodeSrc != NULL && vAttrCodeDst != NULL && m_attrFuncRead)
             if (vAttrCodeSrc->vrFunctionCode != vAttrCodeDst->vrFunctionCode)
                 result = result + "\n        Функция чтения: изменена";
 
@@ -647,50 +1049,50 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
                 break;
         }
         if (vAttrCodeSrc != NULL && vAttrCodeDst != NULL)
-            if (vAttrCodeSrc->vrCalcSetFunction != vAttrCodeDst->vrCalcSetFunction)
+            if (vAttrCodeSrc->vrCalcSetFunction != vAttrCodeDst->vrCalcSetFunction && m_attrFuncWrite)
                 result = result + "\n        Функция записи: изменена";
 
     } else {
-        if (vAttrSrc->vrFunctionCode != vAttrDst->vrFunctionCode) {
+        if (vAttrSrc->vrFunctionCode != vAttrDst->vrFunctionCode && m_attrFuncRead) {
             result = result + "\n        Код функции: изменён";
 //            result = result + "\n" +"\""+ from_bstr_t(vAttrSrc->vrFunctionCode)+"\"";
 //            result = result + "\n !=";
 //            result = result + "\n" +"\"" + from_bstr_t(vAttrDst->vrFunctionCode)+"\"";
         }
 
-        if (vAttrSrc->vrCalcSetFunction != vAttrDst->vrCalcSetFunction)
+        if (vAttrSrc->vrCalcSetFunction != vAttrDst->vrCalcSetFunction && m_attrFuncWrite)
             result = result + "\n        Функция записи: изменена";
     }
 
-    if (vAttrSrc->vrBlocked != vAttrDst->vrBlocked)
+    if (vAttrSrc->vrBlocked != vAttrDst->vrBlocked && m_attrBlocked)
         result = result + "\n        Блокировка: "
                 + vAttrSrc->vrBlocked + " != "
                 + vAttrDst->vrBlocked;
 
-    if (vAttrSrc->vrMeasureUnit != vAttrDst->vrMeasureUnit)
+    if (vAttrSrc->vrMeasureUnit != vAttrDst->vrMeasureUnit && m_attrMeasureUnit)
         result = result + "\n        ЕИ: "
                 + from_bstr_t(vAttrSrc->vrMeasureUnit) + " != "
                 + from_bstr_t(vAttrDst->vrMeasureUnit);
 
-    if (vAttrSrc->vrMeasureEntity != vAttrDst->vrMeasureEntity)
+    if (vAttrSrc->vrMeasureEntity != vAttrDst->vrMeasureEntity && m_attrMeasureEntity)
         result = result + "\n        ЕВ: "
                 + from_bstr_t(vAttrSrc->vrMeasureEntity) + " != "
                 + from_bstr_t(vAttrDst->vrMeasureEntity);
 
-    if (vAttrSrc->vrForbidInput != vAttrDst->vrForbidInput)
+    if (vAttrSrc->vrForbidInput != vAttrDst->vrForbidInput && m_attrForbidInput)
         result = result + "\n        Ввод только из списка: "
                 + vAttrSrc->vrForbidInput + " != "
                 + vAttrDst->vrForbidInput;
 
-    if (baseClassGuidSrc != baseClassGuidDst && sysFunc)
+    if (baseClassGuidSrc != baseClassGuidDst && sysFunc && m_attrBaseClass)
         result = result + "\n        Базовый класс: "
                 + from_guid(baseClassGuidSrc) + " != "
                 + from_guid(baseClassGuidDst);
 
-    if (vAttrSrc->vrPrecision != vAttrDst->vrPrecision)
+    if (vAttrSrc->vrPrecision != vAttrDst->vrPrecision && m_attrPrecision)
         result = result + "\n        Точность: изменена";
 
-    if (vAttrSrc->vrGroup != vAttrDst->vrGroup)
+    if (vAttrSrc->vrGroup != vAttrDst->vrGroup && m_attrGroup)
         result = result + "\n        Группа: "
                 + from_bstr_t(vAttrSrc->vrGroup) + " != "
                 + from_bstr_t(vAttrDst->vrGroup);
@@ -704,6 +1106,8 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
 
 QString StructuresDifference::differencePropAttrs(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
 {
+    if (!m_attrProp) return "";
+
     QString result;
     vkernelLib::IVProperties  *vPropsSrc = vAttrSrc->vrProperties();
     vkernelLib::IVProperties  *vPropsDst = vAttrDst->vrProperties();
@@ -731,7 +1135,7 @@ QString StructuresDifference::differenceClasses(vkernelLib::IVClass *vClassSrc, 
 
     result += this->differenceClassPerms(vClassSrc, vClassDst);
 
-    if (vClassSrc->vrClassID != vClassDst->vrClassID) {
+    if (vClassSrc->vrClassID != vClassDst->vrClassID && m_classId) {
         result = result + "\n    Идентификатор: "
                 + from_guid(vClassSrc->vrClassID) + "!="
                 + from_guid(vClassDst->vrClassID);
@@ -742,7 +1146,7 @@ QString StructuresDifference::differenceClasses(vkernelLib::IVClass *vClassSrc, 
                 + vClassSrc->vrBlocked + "!="
                 + vClassDst->vrBlocked;
 
-    if (vClassSrc->vrScreenName != vClassDst->vrScreenName)
+    if (vClassSrc->vrScreenName != vClassDst->vrScreenName && m_classScreenName)
         result = result + "\n    Экранноё имя: "
                 + from_bstr_t(vClassSrc->vrScreenName) + "!="
                 + from_bstr_t(vClassDst->vrScreenName);
@@ -751,24 +1155,29 @@ QString StructuresDifference::differenceClasses(vkernelLib::IVClass *vClassSrc, 
     vkernelLib::IVClass *vBaseClassDst = vClassDst->vrBaseClass;
     GUID baseClassGuidSrc = (vBaseClassSrc != NULL) ? vBaseClassSrc->vrClassID : GUID_NULL;
     GUID baseClassGuidDst = (vBaseClassDst != NULL) ? vBaseClassDst->vrClassID : GUID_NULL;
-    if (baseClassGuidSrc != baseClassGuidDst)
+    if (baseClassGuidSrc != baseClassGuidDst && m_classBaseClass)
         result = result + "\n        Базовый класс: "
                 + from_guid(baseClassGuidSrc) + " != "
                 + from_guid(baseClassGuidDst);
 
     result += differenceClassLinks(vClassSrc, vClassDst);
 
-    for (int j=0; j<vClassSrc->vrClassValuesCount(); j++){
-        vkernelLib::IVClassValue *vAttrSrc = vClassSrc->vriClassValueItem(j);
-        for (int k=0; k<vClassDst->vrClassValuesCount(); k++){
-            vkernelLib::IVClassValue *vAttrDst = vClassDst->vriClassValueItem(k);
-            if (vAttrSrc->vrName == vAttrDst->vrName) {
-                result += differenceAttrs(vAttrSrc, vAttrDst);
-                break;
-            } else if (k == vClassDst->vrClassValuesCount()-1)
-                result += differenceAttrs(vAttrSrc, NULL);
+    if (m_attrId || m_attrDataType || m_attrType || m_attrScreenName
+            || m_attrAliasName || m_attrFuncRead || m_attrFuncWrite
+            || m_attrBlocked || m_attrMeasureUnit || m_attrMeasureEntity
+            || m_attrForbidInput || m_attrBaseClass || m_attrPrecision
+            || m_attrGroup || m_attrProp || m_attrPerms)
+        for (int j=0; j<vClassSrc->vrClassValuesCount(); j++){
+            vkernelLib::IVClassValue *vAttrSrc = vClassSrc->vriClassValueItem(j);
+            for (int k=0; k<vClassDst->vrClassValuesCount(); k++){
+                vkernelLib::IVClassValue *vAttrDst = vClassDst->vriClassValueItem(k);
+                if (vAttrSrc->vrName == vAttrDst->vrName) {
+                    result += differenceAttrs(vAttrSrc, vAttrDst);
+                    break;
+                } else if (k == vClassDst->vrClassValuesCount()-1)
+                    result += differenceAttrs(vAttrSrc, NULL);
+            }
         }
-    }
 
     if (!result.isEmpty())
         result = "\n\nКласс: " +  from_bstr_t(vClassSrc->vrName) + result;
@@ -777,6 +1186,8 @@ QString StructuresDifference::differenceClasses(vkernelLib::IVClass *vClassSrc, 
 
 QString StructuresDifference::differenceClassLinks(vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst)
 {
+    if (!m_classChild) return "";
+
     QString result;
     for (int i=0; i < vClassSrc->vrChildsCount(); i++){
         vkernelLib::IVClass *vClassChildSrc = vClassSrc->vriChildClassItem(i);
@@ -812,6 +1223,9 @@ QString StructuresDifference::differenceModels(vkernelLib::IVModel *vModelSrc, v
 }
 
 QString StructuresDifference::differenceFilters (vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst) {
+
+    if (!m_classFilter) return "";
+
     QString result;
 
     vkernelLib::IVClassVector *vClassVectorSrc = vModelSrc->vrGetClassVector();

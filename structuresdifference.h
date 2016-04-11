@@ -62,6 +62,108 @@ public:
 
     bool differenceIDispatchs(_variant_t varSrc, _variant_t varDst, GUID dataType);
 
+    bool classId() const;
+    void setClassId(bool classId);
+
+    bool classBlocked() const;
+    void setClassBlocked(bool classBlocked);
+
+    bool classScreenName() const;
+    void setClassScreenName(bool classScreenName);
+
+    bool classBaseClass() const;
+    void setClassBaseClass(bool classBaseClass);
+
+    bool attrId() const;
+    void setAttrId(bool attrId);
+
+    bool attrDataType() const;
+    void setAttrDataType(bool attrDataType);
+
+    bool attrType() const;
+    void setAttrType(bool attrType);
+
+    bool attrScreenName() const;
+    void setAttrScreenName(bool attrScreenName);
+
+    bool attrAliasName() const;
+    void setAttrAliasName(bool attrAliasName);
+
+    bool attrFuncRead() const;
+    void setAttrFuncRead(bool attrFuncRead);
+
+    bool attrFuncWrite() const;
+    void setAttrFuncWrite(bool attrFuncWrite);
+
+    bool attrBlocked() const;
+    void setAttrBlocked(bool attrBlocked);
+
+    bool attrMeasureUnit() const;
+    void setAttrMeasureUnit(bool attrMeasureUnit);
+
+    bool attrMeasureEntity() const;
+    void setAttrMeasureEntity(bool attrMeasureEntity);
+
+    bool attrForbidInput() const;
+    void setAttrForbidInput(bool attrForbidInput);
+
+    bool attrBaseClass() const;
+    void setAttrBaseClass(bool attrBaseClass);
+
+    bool attrPrecision() const;
+    void setAttrPrecision(bool attrPrecision);
+
+    bool attrGroup() const;
+    void setAttrGroup(bool attrGroup);
+
+    bool classChild() const;
+    void setClassChild(bool classChild);
+
+    bool classFilter() const;
+    void setClassFilter(bool classFilter);
+
+    bool classPerms() const;
+    void setClassPerms(bool classPerms);
+
+    bool attrProp() const;
+    void setAttrProp(bool attrProp);
+
+    bool attrPerms() const;
+    void setAttrPerms(bool attrPerms);
+
+    bool permGroup() const;
+    void setPermGroup(bool permGroup);
+
+    bool objId() const;
+    void setObjId(bool objId);
+
+    bool objOwnerId() const;
+    void setObjOwnerId(bool objOwnerId);
+
+    bool objWasChanged() const;
+    void setObjWasChanged(bool objWasChanged);
+
+    bool objReadOnly() const;
+    void setObjReadOnly(bool objReadOnly);
+
+    bool objAttrName() const;
+    void setObjAttrName(bool objAttrName);
+
+    bool objAttrValue() const;
+    void setObjAttrValue(bool objAttrValue);
+
+    bool objAttrMeasureUnit() const;
+    void setObjAttrMeasureUnit(bool objAttrMeasureUnit);
+
+    bool objAttrPrecision() const;
+    void setObjAttrPrecision(bool objAttrPrecision);
+
+    bool objAttrOwnerId() const;
+    void setObjAttrOwnerId(bool objAttrOwnerId);
+
+    bool objChilds() const;
+    void setObjChilds(bool objChilds);
+
 private:
     UniReference::IUniRefer* uniRef;
 
@@ -70,6 +172,44 @@ private:
     QStringList m_groupNames;
     vkernelLib::IVLocalSecurity *m_scrtSrc;
     vkernelLib::IVLocalSecurity *m_scrtDst;
+
+    bool m_classId;
+    bool m_classBlocked;
+    bool m_classScreenName;
+    bool m_classBaseClass;
+    bool m_classChild;
+    bool m_classFilter;
+    bool m_classPerms;
+    bool m_permGroup;
+
+    bool m_attrId;
+    bool m_attrDataType;
+    bool m_attrType;
+    bool m_attrScreenName;
+    bool m_attrAliasName;
+    bool m_attrFuncRead;
+    bool m_attrFuncWrite;
+    bool m_attrBlocked;
+    bool m_attrMeasureUnit;
+    bool m_attrMeasureEntity;
+    bool m_attrForbidInput;
+    bool m_attrBaseClass;
+    bool m_attrPrecision;
+    bool m_attrGroup;
+    bool m_attrProp;
+    bool m_attrPerms;
+
+    bool m_objId;
+    bool m_objOwnerId;
+    bool m_objWasChanged;
+    bool m_objReadOnly;
+    bool m_objChilds;
+
+    bool m_objAttrName;
+    bool m_objAttrValue;
+    bool m_objAttrMeasureUnit;
+    bool m_objAttrPrecision;
+    bool m_objAttrOwnerId;
 
 };
 

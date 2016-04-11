@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "ui_mainwindow.h"
+#include "structuresdifference.h"
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
@@ -15,10 +16,13 @@ private slots:
     void runDiff();
     void openFirstFile();
     void openSecondFile();
+    void setCheckBox();
+    void closeEvent(QCloseEvent *event);
 
 private:
     QString m_firstFileName;
     QString m_secondFileName;
+    StructuresDifference *m_diffModel;
 };
 
 #endif // MAINWINDOW_H
