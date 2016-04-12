@@ -99,7 +99,7 @@ QString StructuresDifference::differenceAttrGroups(vkernelLib::IVModel *vModelSr
         if (groupIdSrc==0 || groupIdDst==0) {
 
             if (!m_permGroup)
-                result = result + "\nНе существует группа: "
+                result += "\nНе существует группа: "
                         + groupName + "("
                         + groupGuid + ")";
             continue;
@@ -227,9 +227,10 @@ QString StructuresDifference::differenceObjects(vkernelLib::IVObject *vObjectSrc
     if (vObjectSrc->vrWasChanged != vObjectDst->vrWasChanged && m_objWasChanged)
         result = result + "\n    Возможность изменения: изменено";
     if (vObjectSrc->vrReadOnly != vObjectDst->vrReadOnly && m_objReadOnly)
-        result = result + "\n    Только чтение: "
-                + vObjectSrc->vrReadOnly + " != "
-                + vObjectDst->vrReadOnly;
+        result = result
+                + QString("\n    Только чтение: %1 != %2")
+                .arg(vObjectSrc->vrReadOnly)
+                .arg(vObjectDst->vrReadOnly);
 
     result += differenceObjectLinks(vObjectSrc, vObjectDst);
 
@@ -1002,8 +1003,7 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
 
     if (vAttrSrc->vrType != vAttrDst->vrType && m_attrType)
         result = result + "\n        Тип атрибута: "
-                + vAttrSrc->vrType + " != "
-                + vAttrDst->vrType;
+                + QString("%1 != %2").arg(vAttrSrc->vrType).arg(vAttrDst->vrType);
 
     if (vAttrSrc->vrScreenName != vAttrDst->vrScreenName && m_attrScreenName)
         result = result + "\n        Экранное имя: "
@@ -1053,21 +1053,17 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
                 result = result + "\n        Функция записи: изменена";
 
     } else {
-        if (vAttrSrc->vrFunctionCode != vAttrDst->vrFunctionCode && m_attrFuncRead) {
+        if (vAttrSrc->vrFunctionCode != vAttrDst->vrFunctionCode && m_attrFuncRead)
             result = result + "\n        Код функции: изменён";
-//            result = result + "\n" +"\""+ from_bstr_t(vAttrSrc->vrFunctionCode)+"\"";
-//            result = result + "\n !=";
-//            result = result + "\n" +"\"" + from_bstr_t(vAttrDst->vrFunctionCode)+"\"";
-        }
 
         if (vAttrSrc->vrCalcSetFunction != vAttrDst->vrCalcSetFunction && m_attrFuncWrite)
             result = result + "\n        Функция записи: изменена";
     }
 
     if (vAttrSrc->vrBlocked != vAttrDst->vrBlocked && m_attrBlocked)
-        result = result + "\n        Блокировка: "
-                + vAttrSrc->vrBlocked + " != "
-                + vAttrDst->vrBlocked;
+        result = result + QString("\n        Блокировка: %1 != %2")
+                .arg(vAttrSrc->vrBlocked)
+                .arg(vAttrDst->vrBlocked);
 
     if (vAttrSrc->vrMeasureUnit != vAttrDst->vrMeasureUnit && m_attrMeasureUnit)
         result = result + "\n        ЕИ: "
@@ -1080,9 +1076,9 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
                 + from_bstr_t(vAttrDst->vrMeasureEntity);
 
     if (vAttrSrc->vrForbidInput != vAttrDst->vrForbidInput && m_attrForbidInput)
-        result = result + "\n        Ввод только из списка: "
-                + vAttrSrc->vrForbidInput + " != "
-                + vAttrDst->vrForbidInput;
+        result = result + QString("\n        Ввод только из списка: ")
+                .arg(vAttrSrc->vrForbidInput)
+                .arg(vAttrDst->vrForbidInput);
 
     if (baseClassGuidSrc != baseClassGuidDst && sysFunc && m_attrBaseClass)
         result = result + "\n        Базовый класс: "
@@ -1142,9 +1138,9 @@ QString StructuresDifference::differenceClasses(vkernelLib::IVClass *vClassSrc, 
     }
 
     if (vClassSrc->vrBlocked != vClassDst->vrBlocked)
-        result = result + "\n    Блокировка: "
-                + vClassSrc->vrBlocked + "!="
-                + vClassDst->vrBlocked;
+        result = result + QString("\n    Блокировка: %1 != %2")
+                .arg(vClassSrc->vrBlocked)
+                .arg(vClassDst->vrBlocked);
 
     if (vClassSrc->vrScreenName != vClassDst->vrScreenName && m_classScreenName)
         result = result + "\n    Экранноё имя: "
