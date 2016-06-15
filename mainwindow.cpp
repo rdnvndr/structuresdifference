@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     attrBlockedCheckBox->setChecked(settings.value("attrBlocked",true).toBool());
     attrMeasureUnitCheckBox->setChecked(settings.value("attrMeasureUnit",true).toBool());
     attrMeasureEntityCheckBox->setChecked(settings.value("attrMeasureEntity",true).toBool());
+    attrLimitCheckBox->setChecked(settings.value("attrLimit",true).toBool());
     attrForbidInputCheckBox->setChecked(settings.value("attrForbidInput",true).toBool());
     attrBaseClassCheckBox->setChecked(settings.value("attrBaseClass",true).toBool());
     attrPrecisionCheckBox->setChecked(settings.value("attrPrecision",true).toBool());
@@ -140,6 +141,7 @@ void MainWindow::setCheckBox()
     m_diffModel->setAttrBlocked(attrBlockedCheckBox->isChecked());
     m_diffModel->setAttrMeasureUnit(attrMeasureUnitCheckBox->isChecked());
     m_diffModel->setAttrMeasureEntity(attrMeasureEntityCheckBox->isChecked());
+    m_diffModel->setAttrLimit(attrLimitCheckBox->isChecked());
     m_diffModel->setAttrForbidInput(attrForbidInputCheckBox->isChecked());
     m_diffModel->setAttrBaseClass(attrBaseClassCheckBox->isChecked());
     m_diffModel->setAttrPrecision(attrPrecisionCheckBox->isChecked());
@@ -183,6 +185,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings.setValue("attrBlocked", attrBlockedCheckBox->isChecked());
     settings.setValue("attrMeasureUnit", attrMeasureUnitCheckBox->isChecked());
     settings.setValue("attrMeasureEntity", attrMeasureEntityCheckBox->isChecked());
+    settings.setValue("attrLimit", attrLimitCheckBox->isChecked());
     settings.setValue("attrForbidInput", attrForbidInputCheckBox->isChecked());
     settings.setValue("attrBaseClass", attrBaseClassCheckBox->isChecked());
     settings.setValue("attrPrecision", attrPrecisionCheckBox->isChecked());

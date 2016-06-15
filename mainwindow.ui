@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>797</width>
-    <height>586</height>
+    <width>778</width>
+    <height>616</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>797</width>
+     <width>778</width>
      <height>18</height>
     </rect>
    </property>
@@ -124,7 +124,7 @@
           <x>0</x>
           <y>0</y>
           <width>268</width>
-          <height>446</height>
+          <height>476</height>
          </rect>
         </property>
         <attribute name="label">
@@ -206,56 +206,6 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
-             <widget class="QCheckBox" name="attrTypeCheckBox">
-              <property name="text">
-               <string>Тип атрибута</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="attrIdCheckBox">
-              <property name="text">
-               <string>Идентификатор</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="0">
-             <widget class="QCheckBox" name="attrForbidInputCheckBox">
-              <property name="text">
-               <string>Ввод из списка</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QCheckBox" name="attrScreenNameCheckBox">
-              <property name="text">
-               <string>Экранное имя</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="attrDataTypeCheckBox">
-              <property name="text">
-               <string>Тип данных</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
             <item row="7" column="0">
              <widget class="QCheckBox" name="attrMeasureEntityCheckBox">
               <property name="text">
@@ -266,30 +216,10 @@
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
-             <widget class="QCheckBox" name="attrAliasNameCheckBox">
+            <item row="12" column="0">
+             <widget class="QCheckBox" name="attrPermsCheckBox">
               <property name="text">
-               <string>Спавочники</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="9" column="0">
-             <widget class="QCheckBox" name="attrPrecisionCheckBox">
-              <property name="text">
-               <string>Точность</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <widget class="QCheckBox" name="attrFuncWriteCheckBox">
-              <property name="text">
-               <string>Функция записи</string>
+               <string>Права доступа</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -306,7 +236,7 @@
               </property>
              </widget>
             </item>
-            <item row="8" column="1">
+            <item row="9" column="1">
              <widget class="QCheckBox" name="attrBaseClassCheckBox">
               <property name="text">
                <string>Базовый класс</string>
@@ -316,7 +246,37 @@
               </property>
              </widget>
             </item>
-            <item row="9" column="1">
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="attrDataTypeCheckBox">
+              <property name="text">
+               <string>Тип данных</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="attrIdCheckBox">
+              <property name="text">
+               <string>Идентификатор</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="attrTypeCheckBox">
+              <property name="text">
+               <string>Тип атрибута</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="1">
              <widget class="QCheckBox" name="attrGroupCheckBox">
               <property name="text">
                <string>Группа</string>
@@ -336,17 +296,67 @@
               </property>
              </widget>
             </item>
-            <item row="11" column="0">
-             <widget class="QCheckBox" name="attrPermsCheckBox">
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="attrScreenNameCheckBox">
               <property name="text">
-               <string>Права доступа</string>
+               <string>Экранное имя</string>
               </property>
               <property name="checked">
                <bool>true</bool>
               </property>
              </widget>
             </item>
-            <item row="11" column="1">
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="attrAliasNameCheckBox">
+              <property name="text">
+               <string>Спавочники</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QCheckBox" name="attrFuncWriteCheckBox">
+              <property name="text">
+               <string>Функция записи</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QCheckBox" name="attrLimitCheckBox">
+              <property name="text">
+               <string>Ограничение</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1">
+             <widget class="QCheckBox" name="attrForbidInputCheckBox">
+              <property name="text">
+               <string>Ввод из списка</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QCheckBox" name="attrPrecisionCheckBox">
+              <property name="text">
+               <string>Точность</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="0">
              <widget class="QCheckBox" name="attrPropCheckBox">
               <property name="text">
                <string>Свойства</string>
@@ -418,8 +428,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>251</width>
-          <height>267</height>
+          <width>268</width>
+          <height>476</height>
          </rect>
         </property>
         <attribute name="label">

@@ -164,6 +164,9 @@ public:
     bool objChilds() const;
     void setObjChilds(bool objChilds);
 
+    bool attrLimit() const;
+    void setAttrLimit(bool attrLimit);
+
 private:
     UniReference::IUniRefer* uniRef;
 
@@ -193,6 +196,7 @@ private:
     bool m_attrMeasureUnit;
     bool m_attrMeasureEntity;
     bool m_attrForbidInput;
+    bool m_attrLimit;
     bool m_attrBaseClass;
     bool m_attrPrecision;
     bool m_attrGroup;

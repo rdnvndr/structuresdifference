@@ -6,6 +6,26 @@
 
 const GUID GUID_NULL = { 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0 } };
 
+const GUID ID_INT = to_guid("{DDF29044-F2DA-4457-9CA2-CA0F1E6501A6}");
+const GUID ID_FLT = to_guid("{51AF1A06-C000-4ed4-940D-ADD3B199EB5E}");
+const GUID ID_STR = to_guid("{751A3E7F-86DC-4527-91C8-79919F3B3FA3}");
+const GUID ID_TEXT = to_guid("{B7672ACF-D5AA-4432-AA5C-ACF9FF8A27F7}");
+const GUID ID_BOOL = to_guid("{1739DAD4-D175-4b0a-B2C7-55759916F7EF}");
+const GUID ID_DATE = to_guid("{BDB20E23-B5D7-4966-8110-6F4EFD8764BB}");
+const GUID ID_NULL = to_guid("{00000000-0000-0000-0000-000000000000}");
+const GUID ID_FILE = to_guid("{2B02B52B-7C4A-40a7-845A-DA553A1B0DA1}");
+const GUID ID_STREAM = to_guid("{F0CA433A-74E7-47b0-958C-CC1EBAC73DA8}");
+
+const GUID ID_DIM = to_guid("{428CC298-47D3-4D09-8B7C-E6F36518C724}");
+const GUID ID_ROUGHNESS = to_guid("{B6C89FE7-2B27-492C-962E-9940365E6201}");
+const GUID ID_ANGLE = to_guid("{2FBF9A81-03B2-4AE8-BF46-3BE7240E7722}");
+const GUID ID_MARKER = to_guid("{068E304F-E0C5-4B75-8785-B893CD910740}");
+const GUID ID_VARIANT = to_guid("{EA1481CE-A241-47DB-BAB8-77EA17C51239}");
+const GUID ID_THREAD = to_guid("{627AE639-7DBE-4420-880E-A1373F0CA4AF}");
+const GUID ID_OBJECTSET = to_guid("{355A97C0-1066-406D-BDEE-46BE1C72EB4E}");
+const GUID ID_FORMTOLERANCE = to_guid("{878CFC01-4EBD-4189-A0F8-A25C087394EA}");
+const GUID ID_DEFLECTEDDOUBLE = to_guid("{34F029CE-71B9-433D-BD0C-A888750D1884}");
+
 StructuresDifference::StructuresDifference(QObject *parent) : QObject(parent)
 {
     ::CoInitialize(NULL);
@@ -33,6 +53,7 @@ StructuresDifference::StructuresDifference(QObject *parent) : QObject(parent)
     m_attrMeasureUnit = true;
     m_attrMeasureEntity = true;
     m_attrForbidInput = true;
+    m_attrLimit = true;
     m_attrBaseClass = true;
     m_attrPrecision = true;
     m_attrGroup = true;
@@ -297,26 +318,6 @@ QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjec
 
 bool StructuresDifference::differenceIDispatchs(_variant_t varSrc, _variant_t varDst, GUID dataType)
 {
-    const GUID ID_INT = to_guid("{DDF29044-F2DA-4457-9CA2-CA0F1E6501A6}");
-    const GUID ID_FLT = to_guid("{51AF1A06-C000-4ed4-940D-ADD3B199EB5E}");
-    const GUID ID_STR = to_guid("{751A3E7F-86DC-4527-91C8-79919F3B3FA3}");
-    const GUID ID_TEXT = to_guid("{B7672ACF-D5AA-4432-AA5C-ACF9FF8A27F7}");
-    const GUID ID_BOOL = to_guid("{1739DAD4-D175-4b0a-B2C7-55759916F7EF}");
-    const GUID ID_DATE = to_guid("{BDB20E23-B5D7-4966-8110-6F4EFD8764BB}");
-    const GUID ID_NULL = to_guid("{00000000-0000-0000-0000-000000000000}");
-    const GUID ID_FILE = to_guid("{2B02B52B-7C4A-40a7-845A-DA553A1B0DA1}");
-    const GUID ID_STREAM = to_guid("{F0CA433A-74E7-47b0-958C-CC1EBAC73DA8}");
-
-    const GUID ID_DIM = to_guid("{428CC298-47D3-4D09-8B7C-E6F36518C724}");
-    const GUID ID_ROUGHNESS = to_guid("{B6C89FE7-2B27-492C-962E-9940365E6201}");
-    const GUID ID_ANGLE = to_guid("{2FBF9A81-03B2-4AE8-BF46-3BE7240E7722}");
-    const GUID ID_MARKER = to_guid("{068E304F-E0C5-4B75-8785-B893CD910740}");
-    const GUID ID_VARIANT = to_guid("{EA1481CE-A241-47DB-BAB8-77EA17C51239}");
-    const GUID ID_THREAD = to_guid("{627AE639-7DBE-4420-880E-A1373F0CA4AF}");
-    const GUID ID_OBJECTSET = to_guid("{355A97C0-1066-406D-BDEE-46BE1C72EB4E}");
-    const GUID ID_FORMTOLERANCE = to_guid("{878CFC01-4EBD-4189-A0F8-A25C087394EA}");
-    const GUID ID_DEFLECTEDDOUBLE = to_guid("{34F029CE-71B9-433D-BD0C-A888750D1884}");
-
     if (dataType == ID_DIM) {
         vkernel_aLib::ISize *iObjSrc = from_vdispatch<vkernel_aLib::ISize>(varSrc);
         vkernel_aLib::ISize *iObjDst = from_vdispatch<vkernel_aLib::ISize>(varDst);
@@ -901,6 +902,16 @@ void StructuresDifference::setObjChilds(bool objChilds)
     m_objChilds = objChilds;
 }
 
+bool StructuresDifference::attrLimit() const
+{
+    return m_attrLimit;
+}
+
+void StructuresDifference::setAttrLimit(bool attrLimit)
+{
+    m_attrLimit = attrLimit;
+}
+
 QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *attrSrc,vkernelLib::IVAttribute *attrDst)
 {
     QString result;
@@ -996,6 +1007,7 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
                + from_guid(vAttrSrc->vrClassValueID) + " != "
                + from_guid(vAttrDst->vrClassValueID);
 
+    GUID dataType = vAttrSrc->GetvrDataType();
     if (vAttrSrc->GetvrDataType() !=  vAttrDst->GetvrDataType() && m_attrDataType)
          result = result + "\n        Тип данных: "
                  + from_guid(vAttrSrc->GetvrDataType()) + " != "
@@ -1052,12 +1064,31 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
             if (vAttrCodeSrc->vrCalcSetFunction != vAttrCodeDst->vrCalcSetFunction && m_attrFuncWrite)
                 result = result + "\n        Функция записи: изменена";
 
-    } else {
+    } else if (vAttrSrc->vrType == 1) {
         if (vAttrSrc->vrFunctionCode != vAttrDst->vrFunctionCode && m_attrFuncRead)
             result = result + "\n        Код функции: изменён";
 
-        if (vAttrSrc->vrCalcSetFunction != vAttrDst->vrCalcSetFunction && m_attrFuncWrite)
-            result = result + "\n        Функция записи: изменена";
+    } else if (vAttrSrc->vrType == 0) {
+        if (m_attrForbidInput && (dataType == ID_STR
+                || dataType == ID_TEXT
+                || dataType == ID_BOOL
+                || dataType == ID_DATE))
+        {
+            if (vAttrSrc->vrForbidInput != vAttrDst->vrForbidInput )
+                result = result + QString("\n        Ввод только из списка: ")
+                        .arg(vAttrSrc->vrForbidInput)
+                        .arg(vAttrDst->vrForbidInput);
+            if (vAttrSrc->vrFunctionCode != vAttrDst->vrFunctionCode)
+                result = result + "\n        Список значений: изменён";
+        }
+
+        if (m_attrLimit && (dataType == ID_INT
+                || dataType == ID_FLT
+                || dataType == ID_VARIANT))
+        {
+            if (vAttrSrc->vrFunctionCode != vAttrDst->vrFunctionCode)
+                result = result + "\n        Ограничение: изменено";
+        }
     }
 
     if (vAttrSrc->vrBlocked != vAttrDst->vrBlocked && m_attrBlocked)
@@ -1073,19 +1104,15 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
     if (vAttrSrc->vrMeasureEntity != vAttrDst->vrMeasureEntity && m_attrMeasureEntity)
         result = result + "\n        ЕВ: "
                 + from_bstr_t(vAttrSrc->vrMeasureEntity) + " != "
-                + from_bstr_t(vAttrDst->vrMeasureEntity);
-
-    if (vAttrSrc->vrForbidInput != vAttrDst->vrForbidInput && m_attrForbidInput)
-        result = result + QString("\n        Ввод только из списка: ")
-                .arg(vAttrSrc->vrForbidInput)
-                .arg(vAttrDst->vrForbidInput);
+                + from_bstr_t(vAttrDst->vrMeasureEntity);   
 
     if (baseClassGuidSrc != baseClassGuidDst && sysFunc && m_attrBaseClass)
         result = result + "\n        Базовый класс: "
                 + from_guid(baseClassGuidSrc) + " != "
                 + from_guid(baseClassGuidDst);
 
-    if (vAttrSrc->vrPrecision != vAttrDst->vrPrecision && m_attrPrecision)
+    if (vAttrSrc->vrPrecision != vAttrDst->vrPrecision && vAttrSrc->vrType != 1
+            && (dataType == ID_FLT || dataType == ID_VARIANT) && m_attrPrecision)
         result = result + "\n        Точность: изменена";
 
     if (vAttrSrc->vrGroup != vAttrDst->vrGroup && m_attrGroup)
@@ -1162,7 +1189,7 @@ QString StructuresDifference::differenceClasses(vkernelLib::IVClass *vClassSrc, 
             || m_attrAliasName || m_attrFuncRead || m_attrFuncWrite
             || m_attrBlocked || m_attrMeasureUnit || m_attrMeasureEntity
             || m_attrForbidInput || m_attrBaseClass || m_attrPrecision
-            || m_attrGroup || m_attrProp || m_attrPerms)
+            || m_attrLimit || m_attrGroup || m_attrProp || m_attrPerms)
         for (int j=0; j<vClassSrc->vrClassValuesCount(); j++){
             vkernelLib::IVClassValue *vAttrSrc = vClassSrc->vriClassValueItem(j);
             for (int k=0; k<vClassDst->vrClassValuesCount(); k++){
