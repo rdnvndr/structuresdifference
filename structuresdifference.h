@@ -37,6 +37,7 @@ public:
 
     QString differenceClasses(vkernelLib::IVClass *vClassSrc,
                               vkernelLib::IVClass *vClassDst);
+    QString addingClass(vkernelLib::IVClass *vClassDst);
     QString differenceClassLinks(vkernelLib::IVClass *vClassSrc,
                                  vkernelLib::IVClass *vClassDst);
     QString differenceFilters(vkernelLib::IVModel *vModelSrc,
@@ -52,6 +53,7 @@ public:
                                  vkernelLib::IVModel *vModelDst);
     QString differenceAttrPerms(vkernelLib::IVClassValue *vAttrSrc,
                                 vkernelLib::IVClassValue *vAttrDst);
+    QString addingAttr(vkernelLib::IVClassValue *vAttrDst);
 
     QString differenceObjects(vkernelLib::IVObject *vObjectSrc,
                               vkernelLib::IVObject *vObjectDst);
