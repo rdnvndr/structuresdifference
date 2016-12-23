@@ -55,6 +55,7 @@ public:
                                  vkernelLib::IVModel *vModelDst);
     QString differenceAttrPerms(vkernelLib::IVClassValue *vAttrSrc,
                                 vkernelLib::IVClassValue *vAttrDst);
+    QString addingAttrPerms(vkernelLib::IVClassValue *vAttrDst);
     QString addingAttr(vkernelLib::IVClassValue *vAttrDst);
 
     QString differenceObjects(vkernelLib::IVObject *vObjectSrc,

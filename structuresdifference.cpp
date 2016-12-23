@@ -257,6 +257,49 @@ QString StructuresDifference::differenceAttrPerms(vkernelLib::IVClassValue *vAtt
     return result;
 }
 
+QString StructuresDifference::addingAttrPerms(vkernelLib::IVClassValue *vAttrDst)
+{
+    if (!m_attrPerms) return "";
+
+    const int smplAttrPermMask = vkernelLib::SF_WRT
+                               | vkernelLib::SF_VSB;
+
+    const int calcAttrPermMask = vkernelLib::SF_WRT
+                               | vkernelLib::SF_VSB
+                               | vkernelLib::SF_EXE;
+
+    const int funcAttrPermMask = vkernelLib::SF_EXE;
+
+    int attrPermMask;
+    switch (vAttrDst->vrType) {
+        case 0: attrPermMask = smplAttrPermMask;
+                break;
+        case 1: attrPermMask = funcAttrPermMask;
+            break;
+        case 2: attrPermMask = calcAttrPermMask;
+            break;
+    }
+
+    QString result;
+    vkernelLib::LDIGEST digestDst = {{0,0,0,0}};
+
+    int rightsDst;
+
+    for (int i=0; i < m_groupsDst.count(); i++) {
+        vAttrDst->vrGetDigest(&(digestDst.data[0]), &(digestDst.data[1]),
+                               &(digestDst.data[2]), &(digestDst.data[3]));
+
+        m_scrtDst->vlsGetRights(m_groupsDst.at(i), &digestDst, &rightsDst);
+
+        rightsDst = rightsDst & attrPermMask;
+        result = result + QString("\n            %1 - %2").arg(rightsDst,2).arg(m_groupNames.at(i));
+    }
+    if (!result.isEmpty())
+        result = "\n        Права доступа:" + result;
+
+    return result;
+}
+
 QString StructuresDifference::differenceObjects(vkernelLib::IVObject *vObjectSrc,  vkernelLib::IVObject *vObjectDst)
 {
     QString result;
@@ -1188,8 +1231,8 @@ QString StructuresDifference::addingAttr(vkernelLib::IVClassValue *vAttrDst)
     vkernelLib::IVClassValue *vInheritedAttrDst = vAttrDst->vrInheritedFrom;
     GUID baseClassGuidDst = (vInheritedAttrDst != NULL) ? vInheritedAttrDst->vrClassValueID : GUID_NULL;
 
-//    if (baseClassGuidSrc == GUID_NULL)
-//        result += this->differenceAttrPerms(vAttrSrc, vAttrDst);
+    if (baseClassGuidDst == GUID_NULL)
+        result += this->addingAttrPerms(vAttrDst);
 
     bool sysFunc = vAttrDst->vrType != 1
             && nameAttr.compare("showme", Qt::CaseInsensitive)==0
