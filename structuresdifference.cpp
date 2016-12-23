@@ -118,10 +118,19 @@ QString StructuresDifference::differenceAttrGroups(vkernelLib::IVModel *vModelSr
         unsigned long groupIdSrc = m_scrtSrc->vlsGetItemByGUID(groupGuid);
         unsigned long groupIdDst = m_scrtDst->vlsGetItemByGUID(groupGuid);
 
-        if (groupIdSrc==0 || groupIdDst==0) {
+        if (groupIdSrc==1 || groupIdDst==0) {
 
             if (!m_permGroup)
-                result += "\nНе существует группа: "
+                result += "\nУдалена группа: "
+                        + groupName + "("
+                        + groupGuid + ")";
+            continue;
+        }
+
+        if (groupIdSrc==0 || groupIdDst==1) {
+
+            if (!m_permGroup)
+                result += "\nДобавлена группа: "
                         + groupName + "("
                         + groupGuid + ")";
             continue;
