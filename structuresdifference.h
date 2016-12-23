@@ -173,6 +173,9 @@ public:
     bool attrLimit() const;
     void setAttrLimit(bool attrLimit);
 
+    bool attrInherited() const;
+    void setAttrInherited(bool attrInherited);
+
 private:
     UniReference::IUniRefer* uniRef;
 
@@ -208,6 +211,7 @@ private:
     bool m_attrGroup;
     bool m_attrProp;
     bool m_attrPerms;
+    bool m_attrInherited;
 
     bool m_objId;
     bool m_objOwnerId;

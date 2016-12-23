@@ -59,6 +59,7 @@ StructuresDifference::StructuresDifference(QObject *parent) : QObject(parent)
     m_attrGroup = true;
     m_attrProp = true;
     m_attrPerms = true;
+    m_attrInherited = true;
 
     m_objId = true;
     m_objOwnerId = true;
@@ -986,6 +987,16 @@ void StructuresDifference::setAttrLimit(bool attrLimit)
     m_attrLimit = attrLimit;
 }
 
+bool StructuresDifference::attrInherited() const
+{
+    return m_attrInherited;
+}
+
+void StructuresDifference::setAttrInherited(bool attrInherited)
+{
+    m_attrInherited = attrInherited;
+}
+
 QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *attrSrc,vkernelLib::IVAttribute *attrDst)
 {
     QString result;
@@ -1066,6 +1077,8 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
 
     if (baseClassGuidSrc == GUID_NULL)
         result += this->differenceAttrPerms(vAttrSrc, vAttrDst);
+    else if (!m_attrInherited)
+        return result;
 
     bool sysFunc = vAttrSrc->vrType != 1
             && nameAttr.compare("showme", Qt::CaseInsensitive)==0
@@ -1233,6 +1246,8 @@ QString StructuresDifference::addingAttr(vkernelLib::IVClassValue *vAttrDst)
 
     if (baseClassGuidDst == GUID_NULL)
         result += this->addingAttrPerms(vAttrDst);
+    else if (!m_attrInherited)
+        return result;
 
     bool sysFunc = vAttrDst->vrType != 1
             && nameAttr.compare("showme", Qt::CaseInsensitive)==0

@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     attrGroupCheckBox->setChecked(settings.value("attrGroup",true).toBool());
     attrPropCheckBox->setChecked(settings.value("attrProp",true).toBool());
     attrPermsCheckBox->setChecked(settings.value("attrPerms",true).toBool());
+    attrInheritedcheckBox->setChecked(settings.value("attrInherited",true).toBool());
 
     objIdCheckBox->setChecked(settings.value("objId",true).toBool());
     objOwnerIdCheckBox->setChecked(settings.value("objOwnerId",true).toBool());
@@ -148,6 +149,7 @@ void MainWindow::setCheckBox()
     m_diffModel->setAttrGroup(attrGroupCheckBox->isChecked());
     m_diffModel->setAttrProp(attrPropCheckBox->isChecked());
     m_diffModel->setAttrPerms(attrPermsCheckBox->isChecked());
+    m_diffModel->setAttrInherited(attrInheritedcheckBox->isChecked());
 
     m_diffModel->setObjId(objIdCheckBox->isChecked());
     m_diffModel->setObjOwnerId(objOwnerIdCheckBox->isChecked());
@@ -192,6 +194,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings.setValue("attrGroup", attrGroupCheckBox->isChecked());
     settings.setValue("attrProp", attrPropCheckBox->isChecked());
     settings.setValue("attrPerms", attrPermsCheckBox->isChecked());
+    settings.setValue("attrInherited", attrInheritedcheckBox->isChecked());
 
     settings.setValue("objId", objIdCheckBox->isChecked());
     settings.setValue("objOwnerId", objOwnerIdCheckBox->isChecked());
