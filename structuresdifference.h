@@ -51,6 +51,7 @@ public:
                             vkernelLib::IVClassValue *vAttrDst);
     QString differencePropAttrs(vkernelLib::IVClassValue *vAttrSrc,
                                 vkernelLib::IVClassValue *vAttrDst);
+    QString addingPropAttrs(vkernelLib::IVClassValue *vAttrDst);
     QString differenceAttrGroups(vkernelLib::IVModel *vModelSrc,
                                  vkernelLib::IVModel *vModelDst);
     QString differenceAttrPerms(vkernelLib::IVClassValue *vAttrSrc,

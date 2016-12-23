@@ -1345,7 +1345,7 @@ QString StructuresDifference::addingAttr(vkernelLib::IVClassValue *vAttrDst)
             result = result + "\n        Группа: " + group;
     }
 
-    // result += differencePropAttrs(vAttrSrc, vAttrDst);
+    result += addingPropAttrs(vAttrDst);
 
     if (!result.isEmpty())
         result = "\n    "+ attrType +": " +  nameAttr + result;
@@ -1368,6 +1368,23 @@ QString StructuresDifference::differencePropAttrs(vkernelLib::IVClassValue *vAtt
         if (valueSrc != valueDst)
             result = result + "\n        Свойство \"" + from_bstr_t(nameSrc) +"\" изменено: "
                     + from_variant_t(valueSrc).toString() + " != "
+                    + from_variant_t(valueDst).toString();
+    }
+    return result;
+}
+
+QString StructuresDifference::addingPropAttrs(vkernelLib::IVClassValue *vAttrDst)
+{
+    if (!m_attrProp) return "";
+
+    QString result;
+    vkernelLib::IVProperties  *vPropsDst = vAttrDst->vrProperties();
+    for (int i=0; i<vPropsDst->vrCount(); i++) {
+        BSTR nameDst;
+        VARIANT tmp;
+        vPropsDst->vrItem(i, &nameDst, &tmp);
+        _variant_t valueDst = vPropsDst->vrPropVal[nameDst];
+        result = result + "\n        Добавлено свойство \"" + from_bstr_t(nameDst) +"\": "
                     + from_variant_t(valueDst).toString();
     }
     return result;
