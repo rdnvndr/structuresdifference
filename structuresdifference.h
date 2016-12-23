@@ -40,10 +40,12 @@ public:
     QString addingClass(vkernelLib::IVClass *vClassDst);
     QString differenceClassLinks(vkernelLib::IVClass *vClassSrc,
                                  vkernelLib::IVClass *vClassDst);
+    QString addingClassLinks(vkernelLib::IVClass *vClassDst);
     QString differenceFilters(vkernelLib::IVModel *vModelSrc,
                               vkernelLib::IVModel *vModelDst);
     QString differenceClassPerms(vkernelLib::IVClass *vClassSrc,
                                  vkernelLib::IVClass *vClassDst);
+    QString addingClassPerms(vkernelLib::IVClass *vClassDst);
 
     QString differenceAttrs(vkernelLib::IVClassValue *vAttrSrc,
                             vkernelLib::IVClassValue *vAttrDst);

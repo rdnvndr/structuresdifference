@@ -173,6 +173,37 @@ QString StructuresDifference::differenceClassPerms(vkernelLib::IVClass *vClassSr
      return result;
 }
 
+QString StructuresDifference::addingClassPerms(vkernelLib::IVClass *vClassDst)
+{
+    if (!m_classPerms) return "";
+
+    const int classPermMask = vkernelLib::SF_LCK
+                            | vkernelLib::SF_WRT
+                            | vkernelLib::SF_VSB
+                            | vkernelLib::SF_EXE
+                            | vkernelLib::SF_DEL
+                            | vkernelLib::SF_CRT;
+
+     QString result;
+     vkernelLib::LDIGEST digestDst = {{0,0,0,0}};
+     int rightsDst;
+
+     for (int i=0; i < m_groupsDst.count(); i++) {
+         vClassDst->vrGetDigest(&(digestDst.data[0]), &(digestDst.data[1]),
+                                &(digestDst.data[2]), &(digestDst.data[3]));
+         m_scrtDst->vlsGetRights(m_groupsDst.at(i), &digestDst, &rightsDst);
+         rightsDst = rightsDst & classPermMask;
+
+         result = result
+                   + QString("\n        %1 - %2").arg(rightsDst,2).arg(m_groupNames.at(i));
+
+     }
+     if (!result.isEmpty())
+         result = "\n    Права доступа:" + result;
+
+     return result;
+}
+
 QString StructuresDifference::differenceAttrPerms(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
 {
     if (!m_attrPerms) return "";
@@ -1387,7 +1418,8 @@ QString StructuresDifference::addingClass(vkernelLib::IVClass *vClassDst)
         GUID baseClassGuidDst = (vBaseClassDst != NULL) ? vBaseClassDst->vrClassID : GUID_NULL;
         result = result + "\n    Базовый класс: " + from_guid(baseClassGuidDst);
     }
-
+    result += this->addingClassPerms(vClassDst);
+    result += this->addingClassLinks(vClassDst);
 
     if (m_attrId || m_attrDataType || m_attrType || m_attrScreenName
             || m_attrAliasName || m_attrFuncRead || m_attrFuncWrite
@@ -1417,6 +1449,30 @@ QString StructuresDifference::differenceClassLinks(vkernelLib::IVClass *vClassSr
             result = result + "\n    Удалена связь: "
                     + from_bstr_t(vClassSrc->vrName) + " <- "
                     + from_bstr_t(vClassChildSrc->vrName);
+    }
+
+    for (int i=0; i < vClassDst->vrChildsCount(); i++){
+        vkernelLib::IVClass *vClassChildDst = vClassDst->vriChildClassItem(i);
+        vkernelLib::IVClass *vClassChildSrc = vClassSrc->vrnChildClassItem(vClassChildDst->vrName);
+        if (vClassChildSrc==NULL)
+            result = result + "\n    Добавлена связь: "
+                    + from_bstr_t(vClassDst->vrName) + " <- "
+                    + from_bstr_t(vClassChildDst->vrName);
+    }
+
+    return result;
+}
+
+QString StructuresDifference::addingClassLinks(vkernelLib::IVClass *vClassDst)
+{
+    if (!m_classChild) return "";
+
+    QString result;
+    for (int i=0; i < vClassDst->vrChildsCount(); i++){
+        vkernelLib::IVClass *vClassChildDst = vClassDst->vriChildClassItem(i);
+        result = result + "\n    Добавлена связь: "
+                    + from_bstr_t(vClassDst->vrName) + " <- "
+                    + from_bstr_t(vClassChildDst->vrName);
     }
     return result;
 }
@@ -1476,6 +1532,29 @@ QString StructuresDifference::differenceFilters (vkernelLib::IVModel *vModelSrc,
             result += filterResult;
         } else {
             result =  result + "\nУдалён фильтр: "+ from_bstr_t(filterSrc);
+        }
+
+    }
+
+    for (int i=0; i<vFilterVectorDst->vrFiltersCount(); i++){
+        _bstr_t filterDst = vFilterVectorDst->vrFilterName(i);
+
+        if (vFilterVectorSrc->vrLocateFilter(filterDst)) {
+            QString filterResult("");
+            for (int j = 0; j < vFilterVectorDst->vrConstrainsCount(filterDst); j++) {
+                _bstr_t classDst = vFilterVectorDst->vrConstrains(filterDst,j);
+                if (!(vFilterVectorSrc->vrLocateConstraint(filterDst, classDst)))
+                    filterResult =  filterResult + "\n    Добавлен класс: "+ from_bstr_t(classDst);
+            }
+            if (!filterResult.isEmpty())
+                result = result + "\n\nФильтр: " +  from_bstr_t(filterDst);
+            result += filterResult;
+        } else {
+            result =  result + "\n\nДобавлен фильтр: "+ from_bstr_t(filterDst);
+            for (int j = 0; j < vFilterVectorDst->vrConstrainsCount(filterDst); j++) {
+                _bstr_t classDst = vFilterVectorDst->vrConstrains(filterDst,j);
+                result =  result +  "\n    Добавлен класс: "+ from_bstr_t(classDst);
+            }
         }
 
     }
