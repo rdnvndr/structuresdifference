@@ -315,7 +315,7 @@ QString StructuresDifference::differenceObjects(vkernelLib::IVObject *vObjectSrc
     QString result;
     if (vObjectDst==NULL)
     {
-        result = result + "\n\nНе существует объект класса \""
+        result = result + "\n\nУдалён объект класса \""
                 + from_bstr_t(vObjectSrc->vrClass()->vrName)+ "\": "
                 + from_bstr_t(vObjectSrc->vrObjStrID());
         return result;
@@ -350,7 +350,7 @@ QString StructuresDifference::differenceObjects(vkernelLib::IVObject *vObjectSrc
                     break;
                 }
                 if (j==vObjectDst->vrAttrCount()-1)
-                    result = "\n    Не существует атрибут: " + from_bstr_t(attrSrc->vrName);
+                    result = "\n    Удалён атрибут: " + from_bstr_t(attrSrc->vrName);
             }
         }
 
@@ -359,6 +359,37 @@ QString StructuresDifference::differenceObjects(vkernelLib::IVObject *vObjectSrc
                 + from_bstr_t(vObjectSrc->vrClass()->vrName)+ "\": "
                 + from_bstr_t(vObjectSrc->vrObjStrID())
                 + result;
+
+    return result;
+}
+
+QString StructuresDifference::addingObjects(vkernelLib::IVObject *vObjectSrc, vkernelLib::IVObject *vObjectDst)
+{
+    if (!m_objAttrName || vObjectSrc==NULL)
+        return "";
+
+    QString result;
+
+    result = result + "\n\nДобавлен объект класса \""
+            + from_bstr_t(vObjectDst->vrClass()->vrName)+ "\": ";
+    result = result + "\n    Идентификатор: " + from_bstr_t(vObjectDst->vrObjStrID());
+    result = result + "\n    Владелец: " + from_bstr_t(vObjectDst->vrOwnerID);
+
+    result += addingObjectLinks(vObjectDst);
+
+    if (m_objAttrName || m_objAttrValue || m_objAttrMeasureUnit
+            || m_objAttrPrecision || m_objAttrOwnerId)
+        for (int i=0; i<vObjectDst->vrAttrCount(); i++) {
+            vkernelLib::IVAttribute *attrDst = vObjectDst->vrAttrByIndex(i);
+            for (int j=0; j<vObjectSrc->vrAttrCount(); j++) {
+                vkernelLib::IVAttribute *attrSrc = vObjectSrc->vrAttrByIndex(j);
+                if (attrSrc->vrName == attrDst->vrName) {
+                    break;
+                }
+                if (j==vObjectSrc->vrAttrCount()-1)
+                    result = "\n    Добавлен атрибут: " + from_bstr_t(attrDst->vrName);
+            }
+        }
 
     return result;
 }
@@ -375,8 +406,8 @@ QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjec
     vkernelLib::IVIterator *vIterDst;
     if (vObjsSrc->raw_vrCreateIterator(L"", vObjectSrc, true, &vIterSrc)!=S_OK)
         return result;
-    if (vObjsDst->raw_vrCreateIterator(L"", vObjectSrc, true, &vIterDst)!=S_OK)
-        return "\n    Дочерние объекты не существуют";
+    if (vObjsDst->raw_vrCreateIterator(L"", vObjectDst, true, &vIterDst)!=S_OK)
+        return "\n    Дочерние объекты удалены";
 
 
     for (bool flagSrc = vIterSrc->vrFirst(); flagSrc == true; flagSrc = vIterSrc->vrNext())
@@ -392,9 +423,31 @@ QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjec
             }
         }
         if (noneChild)
-              result = result + "\n    Дочерний объект класса \""
-                      + from_bstr_t(vObjectSrc->vrClass()->vrName)+ "\" не существует: "
+              result = result + "\n    Удален дочерний объект класса \""
+                      + from_bstr_t(vObjectSrc->vrClass()->vrName)+ "\": "
                       + from_bstr_t(vChildObjectSrc->vrObjStrID());
+    }
+
+    return result;
+}
+
+QString StructuresDifference::addingObjectLinks(vkernelLib::IVObject *vObjectDst)
+{
+    if (!m_objChilds) return "";
+
+    QString result;
+    vkernelLib::IVObjectVector *vObjsDst = vObjectDst->vrObjectsVector();
+
+    vkernelLib::IVIterator *vIterDst;
+    if (vObjsDst->raw_vrCreateIterator(L"", vObjectDst, true, &vIterDst)!=S_OK)
+        return "";
+
+    for (bool flagDst = vIterDst->vrFirst(); flagDst == true; flagDst = vIterDst->vrNext())
+    {
+        vkernelLib::IVObject *vChildObjectDst =  vIterDst->vrGetObject();
+        result = result + "\n    Дочерний объект класса \""
+                + from_bstr_t(vChildObjectDst->vrClass()->vrName)+ "\": "
+                + from_bstr_t(vChildObjectDst->vrObjStrID());
     }
 
     return result;
@@ -1011,7 +1064,7 @@ QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *att
     QString result;
 
     if (attrDst==NULL) {
-        result = "\n    Не существует атрибут: " + from_bstr_t(attrSrc->vrName);
+        result = "\n    Удалён атрибут: " + from_bstr_t(attrSrc->vrName);
         return result;
     }
     if (attrSrc->vrName != attrDst->vrName && m_objAttrName)
@@ -1584,6 +1637,11 @@ QString StructuresDifference::differenceModels(vkernelLib::IVModel *vModelSrc, v
          vkernelLib::IVObject *vObjectSrc = vObjsSrc->vrItem(i);
          vkernelLib::IVObject *vObjectDst = vObjsDst->vrGetObjByStrID(vObjectSrc->vrObjStrID());
          result += differenceObjects(vObjectSrc, vObjectDst);
+    }
+    for (int i=0; i<vObjsDst->vrObjectsCount(); i++) {
+         vkernelLib::IVObject *vObjectDst = vObjsDst->vrItem(i);
+         vkernelLib::IVObject *vObjectSrc = vObjsSrc->vrGetObjByStrID(vObjectDst->vrObjStrID());
+         result += addingObjects(vObjectSrc, vObjectDst);
     }
 
     return result;

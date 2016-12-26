@@ -34,30 +34,32 @@ public:
 
     QString differenceModels(vkernelLib::IVModel *vModelSrc,
                             vkernelLib::IVModel *vModelDst);
-
     QString differenceClasses(vkernelLib::IVClass *vClassSrc,
                               vkernelLib::IVClass *vClassDst);
-    QString addingClass(vkernelLib::IVClass *vClassDst);
+
     QString differenceClassLinks(vkernelLib::IVClass *vClassSrc,
                                  vkernelLib::IVClass *vClassDst);
-    QString addingClassLinks(vkernelLib::IVClass *vClassDst);
     QString differenceFilters(vkernelLib::IVModel *vModelSrc,
                               vkernelLib::IVModel *vModelDst);
     QString differenceClassPerms(vkernelLib::IVClass *vClassSrc,
                                  vkernelLib::IVClass *vClassDst);
-    QString addingClassPerms(vkernelLib::IVClass *vClassDst);
+
 
     QString differenceAttrs(vkernelLib::IVClassValue *vAttrSrc,
                             vkernelLib::IVClassValue *vAttrDst);
     QString differencePropAttrs(vkernelLib::IVClassValue *vAttrSrc,
                                 vkernelLib::IVClassValue *vAttrDst);
-    QString addingPropAttrs(vkernelLib::IVClassValue *vAttrDst);
     QString differenceAttrGroups(vkernelLib::IVModel *vModelSrc,
                                  vkernelLib::IVModel *vModelDst);
     QString differenceAttrPerms(vkernelLib::IVClassValue *vAttrSrc,
                                 vkernelLib::IVClassValue *vAttrDst);
+
+    QString addingClass(vkernelLib::IVClass *vClassDst);
+    QString addingClassLinks(vkernelLib::IVClass *vClassDst);
+    QString addingClassPerms(vkernelLib::IVClass *vClassDst);
+    QString addingPropAttrs(vkernelLib::IVClassValue *vAttrDst);
     QString addingAttrPerms(vkernelLib::IVClassValue *vAttrDst);
-    QString addingAttr(vkernelLib::IVClassValue *vAttrDst);
+    QString addingAttr(vkernelLib::IVClassValue *vAttrDst);  
 
     QString differenceObjects(vkernelLib::IVObject *vObjectSrc,
                               vkernelLib::IVObject *vObjectDst);
@@ -65,6 +67,11 @@ public:
                                   vkernelLib::IVAttribute *attrDst);
     QString differenceObjectLinks(vkernelLib::IVObject *vObjectSrc,
                                   vkernelLib::IVObject *vObjectDst);
+
+    QString addingObjects(vkernelLib::IVObject *vObjectSrc,
+                          vkernelLib::IVObject *vObjectDst);
+    QString addingObjectLinks(vkernelLib::IVObject *vObjectDst);
+
 
     bool differenceIDispatchs(_variant_t varSrc, _variant_t varDst, GUID dataType);
 
