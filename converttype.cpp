@@ -40,7 +40,8 @@ _bstr_t to_bstr_t(QString str){
 }
 
 QString from_bstr_t(_bstr_t str){
-    return QString::fromUtf16(reinterpret_cast<const ushort*>((const WCHAR*)str));
+    return QString::fromUtf16(
+                reinterpret_cast<const ushort*>((const WCHAR*)str));
 }
 
 QVariant from_variant_t(const _variant_t &arg){

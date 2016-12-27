@@ -6,25 +6,41 @@
 
 const GUID GUID_NULL = { 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0 } };
 
-const GUID ID_INT = to_guid("{DDF29044-F2DA-4457-9CA2-CA0F1E6501A6}");
-const GUID ID_FLT = to_guid("{51AF1A06-C000-4ed4-940D-ADD3B199EB5E}");
-const GUID ID_STR = to_guid("{751A3E7F-86DC-4527-91C8-79919F3B3FA3}");
-const GUID ID_TEXT = to_guid("{B7672ACF-D5AA-4432-AA5C-ACF9FF8A27F7}");
-const GUID ID_BOOL = to_guid("{1739DAD4-D175-4b0a-B2C7-55759916F7EF}");
-const GUID ID_DATE = to_guid("{BDB20E23-B5D7-4966-8110-6F4EFD8764BB}");
-const GUID ID_NULL = to_guid("{00000000-0000-0000-0000-000000000000}");
-const GUID ID_FILE = to_guid("{2B02B52B-7C4A-40a7-845A-DA553A1B0DA1}");
+const GUID ID_INT    = to_guid("{DDF29044-F2DA-4457-9CA2-CA0F1E6501A6}");
+const GUID ID_FLT    = to_guid("{51AF1A06-C000-4ed4-940D-ADD3B199EB5E}");
+const GUID ID_STR    = to_guid("{751A3E7F-86DC-4527-91C8-79919F3B3FA3}");
+const GUID ID_TEXT   = to_guid("{B7672ACF-D5AA-4432-AA5C-ACF9FF8A27F7}");
+const GUID ID_BOOL   = to_guid("{1739DAD4-D175-4b0a-B2C7-55759916F7EF}");
+const GUID ID_DATE   = to_guid("{BDB20E23-B5D7-4966-8110-6F4EFD8764BB}");
+const GUID ID_NULL   = to_guid("{00000000-0000-0000-0000-000000000000}");
+const GUID ID_FILE   = to_guid("{2B02B52B-7C4A-40a7-845A-DA553A1B0DA1}");
 const GUID ID_STREAM = to_guid("{F0CA433A-74E7-47b0-958C-CC1EBAC73DA8}");
 
-const GUID ID_DIM = to_guid("{428CC298-47D3-4D09-8B7C-E6F36518C724}");
-const GUID ID_ROUGHNESS = to_guid("{B6C89FE7-2B27-492C-962E-9940365E6201}");
-const GUID ID_ANGLE = to_guid("{2FBF9A81-03B2-4AE8-BF46-3BE7240E7722}");
-const GUID ID_MARKER = to_guid("{068E304F-E0C5-4B75-8785-B893CD910740}");
-const GUID ID_VARIANT = to_guid("{EA1481CE-A241-47DB-BAB8-77EA17C51239}");
-const GUID ID_THREAD = to_guid("{627AE639-7DBE-4420-880E-A1373F0CA4AF}");
-const GUID ID_OBJECTSET = to_guid("{355A97C0-1066-406D-BDEE-46BE1C72EB4E}");
-const GUID ID_FORMTOLERANCE = to_guid("{878CFC01-4EBD-4189-A0F8-A25C087394EA}");
+const GUID ID_DIM             = to_guid("{428CC298-47D3-4D09-8B7C-E6F36518C724}");
+const GUID ID_ROUGHNESS       = to_guid("{B6C89FE7-2B27-492C-962E-9940365E6201}");
+const GUID ID_ANGLE           = to_guid("{2FBF9A81-03B2-4AE8-BF46-3BE7240E7722}");
+const GUID ID_MARKER          = to_guid("{068E304F-E0C5-4B75-8785-B893CD910740}");
+const GUID ID_VARIANT         = to_guid("{EA1481CE-A241-47DB-BAB8-77EA17C51239}");
+const GUID ID_THREAD          = to_guid("{627AE639-7DBE-4420-880E-A1373F0CA4AF}");
+const GUID ID_OBJECTSET       = to_guid("{355A97C0-1066-406D-BDEE-46BE1C72EB4E}");
+const GUID ID_FORMTOLERANCE   = to_guid("{878CFC01-4EBD-4189-A0F8-A25C087394EA}");
 const GUID ID_DEFLECTEDDOUBLE = to_guid("{34F029CE-71B9-433D-BD0C-A888750D1884}");
+
+const int classPermMask = vkernelLib::SF_LCK
+                        | vkernelLib::SF_WRT
+                        | vkernelLib::SF_VSB
+                        | vkernelLib::SF_EXE
+                        | vkernelLib::SF_DEL
+                        | vkernelLib::SF_CRT;
+
+const int smplAttrPermMask = vkernelLib::SF_WRT
+                           | vkernelLib::SF_VSB;
+
+const int calcAttrPermMask = vkernelLib::SF_WRT
+                           | vkernelLib::SF_VSB
+                           | vkernelLib::SF_EXE;
+
+const int funcAttrPermMask = vkernelLib::SF_EXE;
 
 StructuresDifference::StructuresDifference(QObject *parent) : QObject(parent)
 {
@@ -79,11 +95,13 @@ bool StructuresDifference::connect()
 {
     HRESULT Hr = ::CoCreateInstance(__uuidof(UniReference::UniRefer),
                                     NULL, CLSCTX_INPROC_SERVER,
-                                    __uuidof(UniReference::IUniRefer), (void**)&uniRef);
+                                    __uuidof(UniReference::IUniRefer),
+                                    (void**)&uniRef);
     if (Hr == S_OK) {
-        uniRef->GlobalVars()->Logon()->LogonAsParams(to_bstr_t("Администратор"),
-                                                     to_bstr_t("111"),
-                                                     to_bstr_t("Администраторы"));
+        uniRef->GlobalVars()->Logon()->LogonAsParams(
+                    to_bstr_t("Администратор"),
+                    to_bstr_t("111"),
+                    to_bstr_t("Администраторы"));
 
         return true;
     }
@@ -94,32 +112,37 @@ vkernelLib::IVModel *StructuresDifference::loadFile(QString filename)
 {
     vkernelLib::IVModel *vModel = NULL;
     HRESULT Hr = ::CoCreateInstance(__uuidof(vkernelLib::VModel),
-                                       NULL, CLSCTX_INPROC_SERVER,
-                                       __uuidof(vkernelLib::IVModel), (void**)&vModel);
+                                    NULL, CLSCTX_INPROC_SERVER,
+                                    __uuidof(vkernelLib::IVModel),
+                                    (void**)&vModel);
      if (Hr == S_OK) {
          vModel->vrLoadModel(to_bstr_t(filename),
-                                NULL, vkernelLib::OPEN_FULL_STR_LOCAL);
+                             NULL, vkernelLib::OPEN_FULL_STR_LOCAL);
          vModel->vrApplySecurity();
          return vModel;
      } else
          return NULL;
 }
 
-QString StructuresDifference::differenceAttrGroups(vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst)
+QString StructuresDifference::differenceAttrGroups(
+        vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst)
 {
     QString result;
 
     m_scrtSrc = vModelSrc->vrGetLocalSecurity();
     m_scrtDst = vModelDst->vrGetLocalSecurity();
-    for (int i= 0;i < uniRef->GlobalVars()->Logon()->ListGroupsUser()->CountGroupsUser; i++)
+    long countGroupUser =
+            uniRef->GlobalVars()->Logon()->ListGroupsUser()->CountGroupsUser;
+    for (int i= 0; i < countGroupUser; ++i)
     {
-        _bstr_t groupGuid = uniRef->GlobalVars()->Logon()->ListGroupsUser()->GroupByIndex(i)->GuidGroup;
-        _bstr_t groupName = uniRef->GlobalVars()->Logon()->ListGroupsUser()->GroupByIndex(i)->NameGroup;
+        UniReference::IGroupUserComPtr group
+             = uniRef->GlobalVars()->Logon()->ListGroupsUser()->GroupByIndex(i);
+        _bstr_t groupGuid = group->GuidGroup;
+        _bstr_t groupName = group->NameGroup;
         unsigned long groupIdSrc = m_scrtSrc->vlsGetItemByGUID(groupGuid);
         unsigned long groupIdDst = m_scrtDst->vlsGetItemByGUID(groupGuid);
 
-        if (groupIdSrc==1 || groupIdDst==0) {
-
+        if (groupIdSrc == 1 || groupIdDst == 0) {
             if (!m_permGroup)
                 result += "\nУдалена группа: "
                         + groupName + "("
@@ -127,7 +150,7 @@ QString StructuresDifference::differenceAttrGroups(vkernelLib::IVModel *vModelSr
             continue;
         }
 
-        if (groupIdSrc==0 || groupIdDst==1) {
+        if (groupIdSrc == 0 || groupIdDst == 1) {
 
             if (!m_permGroup)
                 result += "\nДобавлена группа: "
@@ -143,16 +166,11 @@ QString StructuresDifference::differenceAttrGroups(vkernelLib::IVModel *vModelSr
     return result;
 }
 
-QString StructuresDifference::differenceClassPerms(vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst)
+QString StructuresDifference::differenceClassPerms(
+        vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst)
 {
-    if (!m_classPerms) return "";
-
-    const int classPermMask = vkernelLib::SF_LCK
-                            | vkernelLib::SF_WRT
-                            | vkernelLib::SF_VSB
-                            | vkernelLib::SF_EXE
-                            | vkernelLib::SF_DEL
-                            | vkernelLib::SF_CRT;
+    if (!m_classPerms)
+        return "";
 
      QString result;
      vkernelLib::LDIGEST digestSrc = {{0,0,0,0}};
@@ -174,7 +192,10 @@ QString StructuresDifference::differenceClassPerms(vkernelLib::IVClass *vClassSr
 
          if (rightsSrc != rightsDst) {
             result = result
-                   + QString("\n        %1 !=  %2 - %3").arg(rightsSrc,2).arg(rightsDst,2).arg(m_groupNames.at(i));
+                   + QString("\n        %1 !=  %2 - %3")
+                    .arg(rightsSrc,2)
+                    .arg(rightsDst,2)
+                    .arg(m_groupNames.at(i));
          }
      }
      if (!result.isEmpty())
@@ -185,47 +206,35 @@ QString StructuresDifference::differenceClassPerms(vkernelLib::IVClass *vClassSr
 
 QString StructuresDifference::addingClassPerms(vkernelLib::IVClass *vClassDst)
 {
-    if (!m_classPerms) return "";
+    if (!m_classPerms)
+        return "";
 
-    const int classPermMask = vkernelLib::SF_LCK
-                            | vkernelLib::SF_WRT
-                            | vkernelLib::SF_VSB
-                            | vkernelLib::SF_EXE
-                            | vkernelLib::SF_DEL
-                            | vkernelLib::SF_CRT;
+    QString result;
+    vkernelLib::LDIGEST digestDst = {{0,0,0,0}};
+    int rightsDst;
 
-     QString result;
-     vkernelLib::LDIGEST digestDst = {{0,0,0,0}};
-     int rightsDst;
+    for (int i=0; i < m_groupsDst.count(); i++) {
+        vClassDst->vrGetDigest(&(digestDst.data[0]), &(digestDst.data[1]),
+                               &(digestDst.data[2]), &(digestDst.data[3]));
+        m_scrtDst->vlsGetRights(m_groupsDst.at(i), &digestDst, &rightsDst);
+        rightsDst = rightsDst & classPermMask;
 
-     for (int i=0; i < m_groupsDst.count(); i++) {
-         vClassDst->vrGetDigest(&(digestDst.data[0]), &(digestDst.data[1]),
-                                &(digestDst.data[2]), &(digestDst.data[3]));
-         m_scrtDst->vlsGetRights(m_groupsDst.at(i), &digestDst, &rightsDst);
-         rightsDst = rightsDst & classPermMask;
+        result = result
+                + QString("\n        %1 - %2")
+                .arg(rightsDst,2)
+                .arg(m_groupNames.at(i));
+    }
+    if (!result.isEmpty())
+        result = "\n    Права доступа:" + result;
 
-         result = result
-                   + QString("\n        %1 - %2").arg(rightsDst,2).arg(m_groupNames.at(i));
-
-     }
-     if (!result.isEmpty())
-         result = "\n    Права доступа:" + result;
-
-     return result;
+    return result;
 }
 
-QString StructuresDifference::differenceAttrPerms(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
+QString StructuresDifference::differenceAttrPerms(
+        vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
 {
-    if (!m_attrPerms) return "";
-
-    const int smplAttrPermMask = vkernelLib::SF_WRT
-                               | vkernelLib::SF_VSB;
-
-    const int calcAttrPermMask = vkernelLib::SF_WRT
-                               | vkernelLib::SF_VSB
-                               | vkernelLib::SF_EXE;
-
-    const int funcAttrPermMask = vkernelLib::SF_EXE;
+    if (!m_attrPerms)
+        return "";
 
     int attrPermMask;
     switch (vAttrSrc->vrType) {
@@ -246,9 +255,9 @@ QString StructuresDifference::differenceAttrPerms(vkernelLib::IVClassValue *vAtt
 
     for (int i=0; i < m_groupsSrc.count(); i++) {
         vAttrSrc->vrGetDigest(&(digestSrc.data[0]), &(digestSrc.data[1]),
-                               &(digestSrc.data[2]), &(digestSrc.data[3]));
+                              &(digestSrc.data[2]), &(digestSrc.data[3]));
         vAttrDst->vrGetDigest(&(digestDst.data[0]), &(digestDst.data[1]),
-                               &(digestDst.data[2]), &(digestDst.data[3]));
+                              &(digestDst.data[2]), &(digestDst.data[3]));
 
         m_scrtSrc->vlsGetRights(m_groupsSrc.at(i), &digestSrc, &rightsSrc);
         m_scrtDst->vlsGetRights(m_groupsDst.at(i), &digestDst, &rightsDst);
@@ -258,7 +267,10 @@ QString StructuresDifference::differenceAttrPerms(vkernelLib::IVClassValue *vAtt
 
         if (rightsSrc != rightsDst) {
            result = result
-                  + QString("\n            %1 !=  %2 - %3").arg(rightsSrc,2).arg(rightsDst,2).arg(m_groupNames.at(i));
+                   + QString("\n            %1 !=  %2 - %3")
+                   .arg(rightsSrc,2)
+                   .arg(rightsDst,2)
+                   .arg(m_groupNames.at(i));
         }
     }
     if (!result.isEmpty())
@@ -269,16 +281,8 @@ QString StructuresDifference::differenceAttrPerms(vkernelLib::IVClassValue *vAtt
 
 QString StructuresDifference::addingAttrPerms(vkernelLib::IVClassValue *vAttrDst)
 {
-    if (!m_attrPerms) return "";
-
-    const int smplAttrPermMask = vkernelLib::SF_WRT
-                               | vkernelLib::SF_VSB;
-
-    const int calcAttrPermMask = vkernelLib::SF_WRT
-                               | vkernelLib::SF_VSB
-                               | vkernelLib::SF_EXE;
-
-    const int funcAttrPermMask = vkernelLib::SF_EXE;
+    if (!m_attrPerms)
+        return "";
 
     int attrPermMask;
     switch (vAttrDst->vrType) {
@@ -297,12 +301,15 @@ QString StructuresDifference::addingAttrPerms(vkernelLib::IVClassValue *vAttrDst
 
     for (int i=0; i < m_groupsDst.count(); i++) {
         vAttrDst->vrGetDigest(&(digestDst.data[0]), &(digestDst.data[1]),
-                               &(digestDst.data[2]), &(digestDst.data[3]));
+                              &(digestDst.data[2]), &(digestDst.data[3]));
 
         m_scrtDst->vlsGetRights(m_groupsDst.at(i), &digestDst, &rightsDst);
 
         rightsDst = rightsDst & attrPermMask;
-        result = result + QString("\n            %1 - %2").arg(rightsDst,2).arg(m_groupNames.at(i));
+        result = result
+                + QString("\n            %1 - %2")
+                .arg(rightsDst,2)
+                .arg(m_groupNames.at(i));
     }
     if (!result.isEmpty())
         result = "\n        Права доступа:" + result;
@@ -310,93 +317,113 @@ QString StructuresDifference::addingAttrPerms(vkernelLib::IVClassValue *vAttrDst
     return result;
 }
 
-QString StructuresDifference::differenceObjects(vkernelLib::IVObject *vObjectSrc,  vkernelLib::IVObject *vObjectDst)
+QString StructuresDifference::differenceObjects(
+        vkernelLib::IVObject *vObjectSrc,  vkernelLib::IVObject *vObjectDst)
 {
-    QString result;
-    if (vObjectDst==NULL)
+    QString result = "";
+    if (vObjectDst == NULL)
     {
-        result = result + "\n\nУдалён объект класса \""
-                + from_bstr_t(vObjectSrc->vrClass()->vrName)+ "\": "
+        result += "\n\nУдалён объект класса \""
+                + from_bstr_t(vObjectSrc->vrClass()->vrName)
+                + "\": "
                 + from_bstr_t(vObjectSrc->vrObjStrID());
         return result;
     }
 
-    if (vObjectSrc->vrObjStrID() != vObjectDst->vrObjStrID() && m_objId)
-        result = result + "\n    Идентификатор: "
-                + from_bstr_t(vObjectSrc->vrObjStrID()) + " != "
+    if (vObjectSrc->vrObjStrID() != vObjectDst->vrObjStrID() && m_objId) {
+        result += "\n    Идентификатор: "
+                + from_bstr_t(vObjectSrc->vrObjStrID())
+                + " != "
                 + from_bstr_t(vObjectDst->vrObjStrID());
-    if (vObjectSrc->vrOwnerID != vObjectDst->vrOwnerID && m_objOwnerId)
-        result = result + "\n    Владелец: "
-                + from_bstr_t(vObjectSrc->vrOwnerID) + " != "
+    }
+    if (vObjectSrc->vrOwnerID != vObjectDst->vrOwnerID && m_objOwnerId) {
+        result += "\n    Владелец: "
+                + from_bstr_t(vObjectSrc->vrOwnerID)
+                + " != "
                 + from_bstr_t(vObjectDst->vrOwnerID);
+    }
     if (vObjectSrc->vrWasChanged != vObjectDst->vrWasChanged && m_objWasChanged)
-        result = result + "\n    Возможность изменения: изменено";
-    if (vObjectSrc->vrReadOnly != vObjectDst->vrReadOnly && m_objReadOnly)
-        result = result
-                + QString("\n    Только чтение: %1 != %2")
+        result += "\n    Возможность изменения: изменено";
+    if (vObjectSrc->vrReadOnly != vObjectDst->vrReadOnly && m_objReadOnly) {
+        result += QString("\n    Только чтение: %1 != %2")
                 .arg(vObjectSrc->vrReadOnly)
                 .arg(vObjectDst->vrReadOnly);
+    }
 
     result += differenceObjectLinks(vObjectSrc, vObjectDst);
 
     if (m_objAttrName || m_objAttrValue || m_objAttrMeasureUnit
             || m_objAttrPrecision || m_objAttrOwnerId)
-        for (int i=0; i<vObjectSrc->vrAttrCount(); i++) {
+    {
+        for (int i = 0; i < vObjectSrc->vrAttrCount(); i++) {
             vkernelLib::IVAttribute *attrSrc = vObjectSrc->vrAttrByIndex(i);
-            for (int j=0; j<vObjectDst->vrAttrCount(); j++) {
+            for (int j = 0; j < vObjectDst->vrAttrCount(); j++) {
                 vkernelLib::IVAttribute *attrDst = vObjectDst->vrAttrByIndex(j);
                 if (attrSrc->vrName == attrDst->vrName) {
                     result += differenceAttrObjects(attrSrc, attrDst);
                     break;
                 }
-                if (j==vObjectDst->vrAttrCount()-1)
-                    result = "\n    Удалён атрибут: " + from_bstr_t(attrSrc->vrName);
+                if (j == vObjectDst->vrAttrCount()-1)
+                    result = "\n    Удалён атрибут: "
+                            + from_bstr_t(attrSrc->vrName);
             }
         }
+    }
 
-    if (!result.isEmpty())
+    if (!result.isEmpty()) {
         result = "\n\nОбъект класса \""
-                + from_bstr_t(vObjectSrc->vrClass()->vrName)+ "\": "
+                + from_bstr_t(vObjectSrc->vrClass()->vrName)
+                + "\": "
                 + from_bstr_t(vObjectSrc->vrObjStrID())
                 + result;
+    }
 
     return result;
 }
 
-QString StructuresDifference::addingObjects(vkernelLib::IVObject *vObjectSrc, vkernelLib::IVObject *vObjectDst)
+QString StructuresDifference::addingObjects(
+        vkernelLib::IVObject *vObjectSrc, vkernelLib::IVObject *vObjectDst)
 {
-    if (!m_objAttrName || vObjectSrc==NULL)
+    if (!m_objAttrName || vObjectSrc == NULL)
         return "";
 
-    QString result;
+    QString result = "";
 
-    result = result + "\n\nДобавлен объект класса \""
-            + from_bstr_t(vObjectDst->vrClass()->vrName)+ "\": ";
-    result = result + "\n    Идентификатор: " + from_bstr_t(vObjectDst->vrObjStrID());
-    result = result + "\n    Владелец: " + from_bstr_t(vObjectDst->vrOwnerID);
+    result += "\n\nДобавлен объект класса \""
+            + from_bstr_t(vObjectDst->vrClass()->vrName)
+            + "\": ";
+    result += "\n    Идентификатор: "
+            + from_bstr_t(vObjectDst->vrObjStrID());
+    result += "\n    Владелец: "
+            + from_bstr_t(vObjectDst->vrOwnerID);
 
     result += addingObjectLinks(vObjectDst);
 
     if (m_objAttrName || m_objAttrValue || m_objAttrMeasureUnit
             || m_objAttrPrecision || m_objAttrOwnerId)
-        for (int i=0; i<vObjectDst->vrAttrCount(); i++) {
+    {
+        for (int i = 0; i < vObjectDst->vrAttrCount(); i++) {
             vkernelLib::IVAttribute *attrDst = vObjectDst->vrAttrByIndex(i);
-            for (int j=0; j<vObjectSrc->vrAttrCount(); j++) {
+            for (int j = 0; j < vObjectSrc->vrAttrCount(); j++) {
                 vkernelLib::IVAttribute *attrSrc = vObjectSrc->vrAttrByIndex(j);
                 if (attrSrc->vrName == attrDst->vrName) {
                     break;
                 }
                 if (j==vObjectSrc->vrAttrCount()-1)
-                    result = "\n    Добавлен атрибут: " + from_bstr_t(attrDst->vrName);
+                    result = "\n    Добавлен атрибут: "
+                            + from_bstr_t(attrDst->vrName);
             }
         }
+    }
 
     return result;
 }
 
-QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjectSrc ,vkernelLib::IVObject *vObjectDst)
+QString StructuresDifference::differenceObjectLinks(
+        vkernelLib::IVObject *vObjectSrc ,vkernelLib::IVObject *vObjectDst)
 {
-    if (!m_objChilds) return "";
+    if (!m_objChilds)
+        return "";
 
     QString result;
     vkernelLib::IVObjectVector *vObjsSrc = vObjectSrc->vrObjectsVector();
@@ -410,11 +437,13 @@ QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjec
         return "\n    Дочерние объекты удалены";
 
 
-    for (bool flagSrc = vIterSrc->vrFirst(); flagSrc == true; flagSrc = vIterSrc->vrNext())
+    for (bool flagSrc = vIterSrc->vrFirst();
+         flagSrc == true; flagSrc = vIterSrc->vrNext())
     {
         vkernelLib::IVObject *vChildObjectSrc =  vIterSrc->vrGetObject();
         bool noneChild = true;
-        for (bool flagDst = vIterDst->vrFirst(); flagDst == true; flagDst = vIterDst->vrNext())
+        for (bool flagDst = vIterDst->vrFirst();
+             flagDst == true; flagDst = vIterDst->vrNext())
         {
             vkernelLib::IVObject *vChildObjectDst =  vIterDst->vrGetObject();
             if (vChildObjectSrc->vrObjStrID()==vChildObjectDst->vrObjStrID()) {
@@ -424,7 +453,8 @@ QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjec
         }
         if (noneChild)
               result = result + "\n    Удален дочерний объект класса \""
-                      + from_bstr_t(vObjectSrc->vrClass()->vrName)+ "\": "
+                      + from_bstr_t(vObjectSrc->vrClass()->vrName)
+                      + "\": "
                       + from_bstr_t(vChildObjectSrc->vrObjStrID());
     }
 
@@ -433,7 +463,8 @@ QString StructuresDifference::differenceObjectLinks(vkernelLib::IVObject *vObjec
 
 QString StructuresDifference::addingObjectLinks(vkernelLib::IVObject *vObjectDst)
 {
-    if (!m_objChilds) return "";
+    if (!m_objChilds)
+        return "";
 
     QString result;
     vkernelLib::IVObjectVector *vObjsDst = vObjectDst->vrObjectsVector();
@@ -442,95 +473,110 @@ QString StructuresDifference::addingObjectLinks(vkernelLib::IVObject *vObjectDst
     if (vObjsDst->raw_vrCreateIterator(L"", vObjectDst, true, &vIterDst)!=S_OK)
         return "";
 
-    for (bool flagDst = vIterDst->vrFirst(); flagDst == true; flagDst = vIterDst->vrNext())
+    for (bool flagDst = vIterDst->vrFirst();
+         flagDst == true; flagDst = vIterDst->vrNext())
     {
         vkernelLib::IVObject *vChildObjectDst =  vIterDst->vrGetObject();
         result = result + "\n    Дочерний объект класса \""
-                + from_bstr_t(vChildObjectDst->vrClass()->vrName)+ "\": "
+                + from_bstr_t(vChildObjectDst->vrClass()->vrName)
+                + "\": "
                 + from_bstr_t(vChildObjectDst->vrObjStrID());
     }
 
     return result;
 }
 
-bool StructuresDifference::differenceIDispatchs(_variant_t varSrc, _variant_t varDst, GUID dataType)
+bool StructuresDifference::differenceIDispatchs(
+        _variant_t varSrc, _variant_t varDst, GUID dataType)
 {
     if (dataType == ID_DIM) {
-        vkernel_aLib::ISize *iObjSrc = from_vdispatch<vkernel_aLib::ISize>(varSrc);
-        vkernel_aLib::ISize *iObjDst = from_vdispatch<vkernel_aLib::ISize>(varDst);
+        vkernel_aLib::ISize *iObjSrc
+                = from_vdispatch<vkernel_aLib::ISize>(varSrc);
+        vkernel_aLib::ISize *iObjDst
+                = from_vdispatch<vkernel_aLib::ISize>(varDst);
         if (iObjSrc && iObjDst) {
-            if (iObjSrc->vrValue != iObjDst->vrValue
-              || iObjSrc->vrBraces != iObjDst->vrBraces
-              || iObjSrc->vrEI != iObjSrc->vrEI
-              || iObjSrc->vrES != iObjSrc->vrES
-              || iObjSrc->vrFormType != iObjDst->vrFormType
-              || iObjSrc->vrFrame != iObjDst->vrFrame
-              || iObjSrc->vrQuality != iObjSrc->vrQuality
-              || iObjSrc->vrQualityNumber != iObjSrc->vrQualityNumber
-              || iObjSrc->vrQualityShow != iObjDst->vrQualityShow
-              || iObjSrc->vrQualityType != iObjDst->vrQualityType
+            if (iObjSrc->vrValue           != iObjDst->vrValue
+              || iObjSrc->vrBraces         != iObjDst->vrBraces
+              || iObjSrc->vrEI             != iObjSrc->vrEI
+              || iObjSrc->vrES             != iObjSrc->vrES
+              || iObjSrc->vrFormType       != iObjDst->vrFormType
+              || iObjSrc->vrFrame          != iObjDst->vrFrame
+              || iObjSrc->vrQuality        != iObjSrc->vrQuality
+              || iObjSrc->vrQualityNumber  != iObjSrc->vrQualityNumber
+              || iObjSrc->vrQualityShow    != iObjDst->vrQualityShow
+              || iObjSrc->vrQualityType    != iObjDst->vrQualityType
               || iObjSrc->vrShowDeflection != iObjSrc->vrShowDeflection
-              || iObjSrc->vrSpecialSymbol != iObjSrc->vrSpecialSymbol
-              || iObjSrc->vrTextAfter != iObjSrc->vrTextAfter
-              || iObjSrc->vrTextBefore != iObjSrc->vrTextBefore
-              || iObjSrc->vrTextValue != iObjSrc->vrTextValue
-              || iObjSrc->vrUnderline != iObjSrc->vrUnderline
+              || iObjSrc->vrSpecialSymbol  != iObjSrc->vrSpecialSymbol
+              || iObjSrc->vrTextAfter      != iObjSrc->vrTextAfter
+              || iObjSrc->vrTextBefore     != iObjSrc->vrTextBefore
+              || iObjSrc->vrTextValue      != iObjSrc->vrTextValue
+              || iObjSrc->vrUnderline      != iObjSrc->vrUnderline
             )
                 return true;
-        } else return true;
-
+        } else
+            return true;
     }
 
     if (dataType == ID_ROUGHNESS) {
-        vkernel_aLib::IRoughness *iObjSrc = from_vdispatch<vkernel_aLib::IRoughness>(varSrc);
-        vkernel_aLib::IRoughness *iObjDst = from_vdispatch<vkernel_aLib::IRoughness>(varDst);
+        vkernel_aLib::IRoughness *iObjSrc
+                = from_vdispatch<vkernel_aLib::IRoughness>(varSrc);
+        vkernel_aLib::IRoughness *iObjDst
+                = from_vdispatch<vkernel_aLib::IRoughness>(varDst);
         if (iObjSrc && iObjDst) {
              if (iObjSrc->vrRA != iObjDst->vrRA
                      || iObjSrc->vrRoughClass != iObjDst->vrRoughClass
-                     || iObjSrc->vrRZ != iObjDst->vrRZ
-                     || iObjSrc->vrTextValue != iObjDst->vrTextValue
-                     || iObjSrc->vrUseRA != iObjDst->vrUseRA
+                     || iObjSrc->vrRZ         != iObjDst->vrRZ
+                     || iObjSrc->vrTextValue  != iObjDst->vrTextValue
+                     || iObjSrc->vrUseRA      != iObjDst->vrUseRA
              )
                   return true;
-        } else return true;
-
+        } else
+            return true;
     }
 
     if (dataType == ID_ANGLE) {
-        vkernel_aLib::IAngle *iObjSrc = from_vdispatch<vkernel_aLib::IAngle>(varSrc);
-        vkernel_aLib::IAngle *iObjDst = from_vdispatch<vkernel_aLib::IAngle>(varDst);
+        vkernel_aLib::IAngle *iObjSrc
+                = from_vdispatch<vkernel_aLib::IAngle>(varSrc);
+        vkernel_aLib::IAngle *iObjDst
+                = from_vdispatch<vkernel_aLib::IAngle>(varDst);
         if (iObjSrc && iObjDst) {
-             if (iObjSrc->vrBraces != iObjDst->vrBraces
-                     || iObjSrc->vrEI != iObjDst->vrEI
-                     || iObjSrc->vrES != iObjDst->vrES
-                     || iObjSrc->vrFrame != iObjDst->vrFrame
+             if (iObjSrc->vrBraces                != iObjDst->vrBraces
+                     || iObjSrc->vrEI             != iObjDst->vrEI
+                     || iObjSrc->vrES             != iObjDst->vrES
+                     || iObjSrc->vrFrame          != iObjDst->vrFrame
                      || iObjSrc->vrShowDeflection != iObjDst->vrShowDeflection
-                     || iObjSrc->vrShowType != iObjDst->vrShowType
-                     || iObjSrc->vrTextAfter != iObjDst->vrTextAfter
-                     || iObjSrc->vrTextBefore != iObjDst->vrTextBefore
-                     || iObjSrc->vrTextValue != iObjDst->vrTextValue
-                     || iObjSrc->vrUnderline != iObjDst->vrUnderline
-                     || iObjSrc->vrValue != iObjDst->vrValue
+                     || iObjSrc->vrShowType       != iObjDst->vrShowType
+                     || iObjSrc->vrTextAfter      != iObjDst->vrTextAfter
+                     || iObjSrc->vrTextBefore     != iObjDst->vrTextBefore
+                     || iObjSrc->vrTextValue      != iObjDst->vrTextValue
+                     || iObjSrc->vrUnderline      != iObjDst->vrUnderline
+                     || iObjSrc->vrValue          != iObjDst->vrValue
              )
                   return true;
-        } else return true;
+        } else
+            return true;
     }
 
     if (dataType == ID_MARKER) {
-        vkernel_aLib::IMarker *iObjSrc = from_vdispatch<vkernel_aLib::IMarker>(varSrc);
-        vkernel_aLib::IMarker *iObjDst = from_vdispatch<vkernel_aLib::IMarker>(varDst);
+        vkernel_aLib::IMarker *iObjSrc
+                = from_vdispatch<vkernel_aLib::IMarker>(varSrc);
+        vkernel_aLib::IMarker *iObjDst
+                = from_vdispatch<vkernel_aLib::IMarker>(varDst);
         if (iObjSrc && iObjDst) {
             if (iObjSrc->vrTextValue != iObjDst->vrTextValue
-                    || iObjSrc->vrValue != iObjDst->vrValue
+                 || iObjSrc->vrValue != iObjDst->vrValue
             )
                  return true;
-        } else return true;
+        } else
+            return true;
 
     }
 
     if (dataType == ID_VARIANT) {
-        vkernelLib::IVariant *iObjSrc = from_vdispatch<vkernelLib::IVariant>(varSrc);
-        vkernelLib::IVariant *iObjDst = from_vdispatch<vkernelLib::IVariant>(varDst);
+        vkernelLib::IVariant *iObjSrc
+                = from_vdispatch<vkernelLib::IVariant>(varSrc);
+        vkernelLib::IVariant *iObjDst
+                = from_vdispatch<vkernelLib::IVariant>(varDst);
         if (iObjSrc && iObjDst) {
             switch (iObjSrc->vrDataType) {
             case vkernelLib::VARIANTDATATYPE::VRD_BOOL:
@@ -563,50 +609,60 @@ bool StructuresDifference::differenceIDispatchs(_variant_t varSrc, _variant_t va
                 break;
             case vkernelLib::VARIANTDATATYPE::VRD_VARIANT:
             default:
-                return differenceIDispatchs(iObjSrc->vrVariant, iObjDst->vrVariant,
-                                            iObjSrc->vrClassID);
+                return differenceIDispatchs(
+                            iObjSrc->vrVariant,
+                            iObjDst->vrVariant,
+                            iObjSrc->vrClassID);
             }
 
-        } else return true;
+        } else
+            return true;
     }
 
     if (dataType == ID_THREAD) {
-        vkernel_aLib::IThread *iObjSrc = from_vdispatch<vkernel_aLib::IThread>(varSrc);
-        vkernel_aLib::IThread *iObjDst = from_vdispatch<vkernel_aLib::IThread>(varDst);
+        vkernel_aLib::IThread *iObjSrc
+                = from_vdispatch<vkernel_aLib::IThread>(varSrc);
+        vkernel_aLib::IThread *iObjDst
+                = from_vdispatch<vkernel_aLib::IThread>(varDst);
         if (iObjSrc && iObjDst) {
-             if (iObjSrc->vrCountStart != iObjDst->vrCountStart
-                     || iObjSrc->vrDExt != iObjDst->vrDExt
-                     || iObjSrc->vrDExtEi != iObjDst->vrDExtEi
-                     || iObjSrc->vrDExtEs != iObjDst->vrDExtEs
-                     || iObjSrc->vrDInt != iObjDst->vrDInt
-                     || iObjSrc->vrDIntEi != iObjDst->vrDIntEi
-                     || iObjSrc->vrDIntEs != iObjDst->vrDIntEs
-                     || iObjSrc->vrDMiddle != iObjDst->vrDMiddle
-                     || iObjSrc->vrDMiddleEi != iObjDst->vrDMiddleEi
-                     || iObjSrc->vrDMiddleEs != iObjDst->vrDMiddleEs
-                     || iObjSrc->vrLengthThread != iObjDst->vrLengthThread
-                     || iObjSrc->vrLengthwise != iObjDst->vrLengthwise
-                     || iObjSrc->vrLengthwiseNormally != iObjDst->vrLengthwiseNormally
-                     || iObjSrc->vrLengthwiseSmallerThread != iObjDst->vrLengthwiseSmallerThread
-                     || iObjSrc->vrOboznD != iObjDst->vrOboznD
+             if (iObjSrc->vrCountStart            != iObjDst->vrCountStart
+                     || iObjSrc->vrDExt           != iObjDst->vrDExt
+                     || iObjSrc->vrDExtEi         != iObjDst->vrDExtEi
+                     || iObjSrc->vrDExtEs         != iObjDst->vrDExtEs
+                     || iObjSrc->vrDInt           != iObjDst->vrDInt
+                     || iObjSrc->vrDIntEi         != iObjDst->vrDIntEi
+                     || iObjSrc->vrDIntEs         != iObjDst->vrDIntEs
+                     || iObjSrc->vrDMiddle        != iObjDst->vrDMiddle
+                     || iObjSrc->vrDMiddleEi      != iObjDst->vrDMiddleEi
+                     || iObjSrc->vrDMiddleEs      != iObjDst->vrDMiddleEs
+                     || iObjSrc->vrLengthThread   != iObjDst->vrLengthThread
+                     || iObjSrc->vrLengthwise     != iObjDst->vrLengthwise
+                     || iObjSrc->vrOboznD         != iObjDst->vrOboznD
                      || iObjSrc->vrShiftBasePlane != iObjDst->vrShiftBasePlane
-                     || iObjSrc->vrStep != iObjDst->vrStep
-                     || iObjSrc->vrTextValue != iObjDst->vrTextValue
-                     || iObjSrc->vrTolerance != iObjDst->vrTolerance
-                     || iObjSrc->vrToleranceShiftBasePlane != iObjDst->vrToleranceShiftBasePlane
-                     || iObjSrc->vrType != iObjDst->vrType
-                     || iObjSrc->vrTypeForm != iObjDst->vrTypeForm
-                     || iObjSrc->vrTypeLR != iObjDst->vrTypeLR
-                     || iObjSrc->vrTypeStep != iObjDst->vrTypeStep
-                     || iObjSrc->vrValue != iObjDst->vrValue
+                     || iObjSrc->vrStep           != iObjDst->vrStep
+                     || iObjSrc->vrTextValue      != iObjDst->vrTextValue
+                     || iObjSrc->vrTolerance      != iObjDst->vrTolerance
+                     || iObjSrc->vrType           != iObjDst->vrType
+                     || iObjSrc->vrTypeForm       != iObjDst->vrTypeForm
+                     || iObjSrc->vrTypeLR         != iObjDst->vrTypeLR
+                     || iObjSrc->vrTypeStep       != iObjDst->vrTypeStep
+                     || iObjSrc->vrValue          != iObjDst->vrValue
+                     || iObjSrc->vrLengthwiseNormally
+                             != iObjDst->vrLengthwiseNormally
+                     || iObjSrc->vrLengthwiseSmallerThread
+                             != iObjDst->vrLengthwiseSmallerThread
+                     || iObjSrc->vrToleranceShiftBasePlane
+                              != iObjDst->vrToleranceShiftBasePlane
              )
                   return true;
         } else return true;
     }
 
     if (dataType == ID_OBJECTSET) {
-        vkernel_aLib::IObjectSet *iObjSrc = from_vdispatch<vkernel_aLib::IObjectSet>(varSrc);
-        vkernel_aLib::IObjectSet *iObjDst = from_vdispatch<vkernel_aLib::IObjectSet>(varDst);
+        vkernel_aLib::IObjectSet *iObjSrc
+                = from_vdispatch<vkernel_aLib::IObjectSet>(varSrc);
+        vkernel_aLib::IObjectSet *iObjDst
+                = from_vdispatch<vkernel_aLib::IObjectSet>(varDst);
         if (iObjSrc && iObjDst) {
             for (int i = 0; i < iObjSrc->vrSize(); i++) {
                 _bstr_t guidSrc = iObjSrc->vrObjectStr(i);
@@ -618,48 +674,57 @@ bool StructuresDifference::differenceIDispatchs(_variant_t varSrc, _variant_t va
                         return true;
                 }
             }
-        } else return true;
+        } else
+            return true;
     }
 
     if (dataType == ID_FORMTOLERANCE) {
-        vkernel_aLib::IFormTolerance *iObjSrc = from_vdispatch<vkernel_aLib::IFormTolerance>(varSrc);
-        vkernel_aLib::IFormTolerance *iObjDst = from_vdispatch<vkernel_aLib::IFormTolerance>(varDst);
+        vkernel_aLib::IFormTolerance *iObjSrc
+                = from_vdispatch<vkernel_aLib::IFormTolerance>(varSrc);
+        vkernel_aLib::IFormTolerance *iObjDst
+                = from_vdispatch<vkernel_aLib::IFormTolerance>(varDst);
         if (iObjSrc && iObjDst) {
-             if (iObjSrc->vrBase1 != iObjDst->vrBase1
-                     || iObjSrc->vrBase2 != iObjDst->vrBase2
-                     || iObjSrc->vrBaseCode1 != iObjDst->vrBaseCode1
-                     || iObjSrc->vrBaseCode2 != iObjDst->vrBaseCode2
-                     || iObjSrc->vrLengthwise != iObjDst->vrLengthwise
-                     || iObjSrc->vrSymbol != iObjDst->vrSymbol
+             if (iObjSrc->vrBase1              != iObjDst->vrBase1
+                     || iObjSrc->vrBase2       != iObjDst->vrBase2
+                     || iObjSrc->vrBaseCode1   != iObjDst->vrBaseCode1
+                     || iObjSrc->vrBaseCode2   != iObjDst->vrBaseCode2
+                     || iObjSrc->vrLengthwise  != iObjDst->vrLengthwise
+                     || iObjSrc->vrSymbol      != iObjDst->vrSymbol
                      || iObjSrc->vrSymbolAdded != iObjDst->vrSymbolAdded
-                     || iObjSrc->vrTextAfter != iObjDst->vrTextAfter
-                     || iObjSrc->vrTextBefore != iObjDst->vrTextBefore
-                     || iObjSrc->vrTextValue != iObjDst->vrTextValue
-                     || iObjSrc->vrType != iObjDst->vrType
-                     || iObjSrc->vrTypeAdded != iObjDst->vrTypeAdded
-                     || iObjSrc->vrValue != iObjDst->vrValue
+                     || iObjSrc->vrTextAfter   != iObjDst->vrTextAfter
+                     || iObjSrc->vrTextBefore  != iObjDst->vrTextBefore
+                     || iObjSrc->vrTextValue   != iObjDst->vrTextValue
+                     || iObjSrc->vrType        != iObjDst->vrType
+                     || iObjSrc->vrTypeAdded   != iObjDst->vrTypeAdded
+                     || iObjSrc->vrValue       != iObjDst->vrValue
              )
                   return true;
-        } else return true;
+        } else
+            return true;
     }
 
     if (dataType == ID_DEFLECTEDDOUBLE) {
-        vkernel_aLib::IDeflectedDouble *iObjSrc = from_vdispatch<vkernel_aLib::IDeflectedDouble>(varSrc);
-        vkernel_aLib::IDeflectedDouble *iObjDst = from_vdispatch<vkernel_aLib::IDeflectedDouble>(varDst);
+        vkernel_aLib::IDeflectedDouble *iObjSrc
+                = from_vdispatch<vkernel_aLib::IDeflectedDouble>(varSrc);
+        vkernel_aLib::IDeflectedDouble *iObjDst
+                = from_vdispatch<vkernel_aLib::IDeflectedDouble>(varDst);
         if (iObjSrc && iObjDst) {
-            if (iObjSrc->vrEI != iObjDst->vrEI
-                    || iObjSrc->vrES != iObjDst->vrES
-                    || iObjSrc->vrShowDeflection != iObjDst->vrShowDeflection
+            if (iObjSrc->vrShowDeflection   != iObjDst->vrShowDeflection
+                    || iObjSrc->vrEI        != iObjDst->vrEI
+                    || iObjSrc->vrES        != iObjDst->vrES
                     || iObjSrc->vrTextValue != iObjDst->vrTextValue
-                    || iObjSrc->vrValue != iObjDst->vrValue
+                    || iObjSrc->vrValue     != iObjDst->vrValue
             )
                  return true;
-        } else return true;
+        } else
+            return true;
     }
 
     if (dataType == ID_FILE) {
-        vkernelLib::IVFile *iObjSrc = from_vdispatch<vkernelLib::IVFile>(varSrc);
-        vkernelLib::IVFile *iObjDst = from_vdispatch<vkernelLib::IVFile>(varDst);
+        vkernelLib::IVFile *iObjSrc
+                = from_vdispatch<vkernelLib::IVFile>(varSrc);
+        vkernelLib::IVFile *iObjDst
+                = from_vdispatch<vkernelLib::IVFile>(varDst);
 
         if (iObjSrc && iObjDst) {
             bool openedSrc = false;
@@ -1059,7 +1124,8 @@ void StructuresDifference::setAttrInherited(bool attrInherited)
     m_attrInherited = attrInherited;
 }
 
-QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *attrSrc,vkernelLib::IVAttribute *attrDst)
+QString StructuresDifference::differenceAttrObjects(
+        vkernelLib::IVAttribute *attrSrc,vkernelLib::IVAttribute *attrDst)
 {
     QString result;
 
@@ -1068,41 +1134,52 @@ QString StructuresDifference::differenceAttrObjects(vkernelLib::IVAttribute *att
         return result;
     }
     if (attrSrc->vrName != attrDst->vrName && m_objAttrName)
-        result = result + "\n        Наименование: "
-                + from_bstr_t(attrSrc->vrName) + " != "
+        result += "\n        Наименование: "
+                + from_bstr_t(attrSrc->vrName)
+                + " != "
                 + from_bstr_t(attrDst->vrName);
+
     if (attrSrc->vrValue != attrDst->vrValue && m_objAttrValue) {
         if (attrSrc->vrValue.vt & VT_DISPATCH) {
             if (differenceIDispatchs(attrSrc->vrValue,
-                                    attrDst->vrValue,
-                                    attrSrc->vrClassValue()->GetvrDataType()))
-                result = result + "\n        Значение изменено";
+                                     attrDst->vrValue,
+                                     attrSrc->vrClassValue()->GetvrDataType()))
+                result += "\n        Значение изменено";
 
         } else
-            result = result + "\n        Значение изменено: \""
-                    + from_variant_t(attrSrc->vrValue).toString() + "\" != \""
-                    + from_variant_t(attrDst->vrValue).toString() + "\"";
+            result += "\n        Значение изменено: \""
+                    + from_variant_t(attrSrc->vrValue).toString()
+                    + "\" != \""
+                    + from_variant_t(attrDst->vrValue).toString()
+                    + "\"";
     }
 
     if (attrSrc->vrMeasureUnit != attrDst->vrMeasureUnit && m_objAttrMeasureUnit)
-        result = result + "\n        ЕИ: "
-                + from_bstr_t(attrSrc->vrMeasureUnit) + " != "
+        result += "\n        ЕИ: "
+                + from_bstr_t(attrSrc->vrMeasureUnit)
+                + " != "
                 + from_bstr_t(attrDst->vrMeasureUnit);
+
     if (attrSrc->vrPrecision != attrDst->vrPrecision && m_objAttrPrecision)
-        result = result + "\n        Точность: изменена";
+        result += "\n        Точность: изменена";
 
     if (attrSrc->vrOwnerID != attrDst->vrOwnerID && m_objAttrOwnerId)
-        result = result + "\n        Владелец: "
-                + from_bstr_t(attrSrc->vrOwnerID) + " != "
+        result += "\n        Владелец: "
+                + from_bstr_t(attrSrc->vrOwnerID)
+                + " != "
                 + from_bstr_t(attrDst->vrOwnerID);
+
     if (!result.isEmpty())
         result = "\n    Атрибут: "
                 + from_bstr_t(attrSrc->vrName)
                 + result;
+
     return result;
 }
 
-QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst) {
+QString StructuresDifference::differenceAttrs(
+        vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
+{
 
     QString result;
     QString attrType = "Неизвестынй тип атрибута";
@@ -1127,15 +1204,16 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
                     return result;
             }
         }
-        result = "\n    "+attrType+" удалён(а): " + nameAttr;
+        result = "\n    " + attrType+" удалён(а): " + nameAttr;
         return result;
-
     }
 
     vkernelLib::IVClassValue *vInheritedAttrSrc = vAttrSrc->vrInheritedFrom;
     vkernelLib::IVClassValue *vInheritedAttrDst = vAttrDst->vrInheritedFrom;
-    GUID baseClassGuidSrc = (vInheritedAttrSrc != NULL) ? vInheritedAttrSrc->vrClassValueID : GUID_NULL;
-    GUID baseClassGuidDst = (vInheritedAttrDst != NULL) ? vInheritedAttrDst->vrClassValueID : GUID_NULL;
+    GUID baseClassGuidSrc = (vInheritedAttrSrc != NULL)
+            ? vInheritedAttrSrc->vrClassValueID : GUID_NULL;
+    GUID baseClassGuidDst = (vInheritedAttrDst != NULL)
+            ? vInheritedAttrDst->vrClassValueID : GUID_NULL;
 
     if (baseClassGuidSrc == GUID_NULL)
         result += this->differenceAttrPerms(vAttrSrc, vAttrDst);
@@ -1151,28 +1229,34 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
             && nameAttr.compare("afterupdate", Qt::CaseInsensitive)==0
             && nameAttr.compare("canchange", Qt::CaseInsensitive)==0
             && nameAttr.startsWith("diag_", Qt::CaseInsensitive)==0;
-    if (vAttrSrc->vrClassValueID != vAttrDst->vrClassValueID && sysFunc && m_attrId)
-        result = result + "\n        Идентификатор: "
-               + from_guid(vAttrSrc->vrClassValueID) + " != "
-               + from_guid(vAttrDst->vrClassValueID);
+    if (vAttrSrc->vrClassValueID != vAttrDst->vrClassValueID
+            && sysFunc && m_attrId) {
+        result += "\n        Идентификатор: "
+                + from_guid(vAttrSrc->vrClassValueID)
+                + " != "
+                + from_guid(vAttrDst->vrClassValueID);
+    }
 
     GUID dataType = vAttrSrc->GetvrDataType();
     if (vAttrSrc->GetvrDataType() !=  vAttrDst->GetvrDataType() && m_attrDataType)
-         result = result + "\n        Тип данных: "
+         result += "\n        Тип данных: "
                  + from_guid(vAttrSrc->GetvrDataType()) + " != "
                  + from_guid(vAttrDst->GetvrDataType());
 
     if (vAttrSrc->vrType != vAttrDst->vrType && m_attrType)
-        result = result + "\n        Тип атрибута: "
-                + QString("%1 != %2").arg(vAttrSrc->vrType).arg(vAttrDst->vrType);
+        result += "\n        Тип атрибута: "
+                + QString("%1 != %2")
+                .arg(vAttrSrc->vrType)
+                .arg(vAttrDst->vrType);
 
     if (vAttrSrc->vrScreenName != vAttrDst->vrScreenName && m_attrScreenName)
-        result = result + "\n        Экранное имя: "
-                + from_bstr_t(vAttrSrc->vrScreenName) + " != "
+        result += "\n        Экранное имя: "
+                + from_bstr_t(vAttrSrc->vrScreenName)
+                + " != "
                 + from_bstr_t(vAttrDst->vrScreenName);
 
     if (vAttrSrc->vrAliasName != vAttrDst->vrAliasName && m_attrAliasName)
-        result = result + "\n        Справочники: "
+        result += "\n        Справочники: "
                 + from_bstr_t(vAttrSrc->vrAliasName) + " != "
                 + from_bstr_t(vAttrDst->vrAliasName);
 
@@ -1181,27 +1265,30 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
         vkernelLib::IVClass *vClassSrc = vAttrSrc->vrClass();
         vkernelLib::IVClassValue *vAttrCodeSrc = NULL;
 
-        for (int k=0; k < vClassSrc->vrClassValuesCount(); k++){
+        for (int k = 0; k < vClassSrc->vrClassValuesCount(); k++){
             vAttrCodeSrc = vClassSrc->vriClassValueItem(k);
             if (vAttrCodeSrc->vrName == vAttrSrc->vrFunctionCode)
                 break;
         }
+
         vkernelLib::IVClass *vClassDst = vAttrDst->vrClass();
         vkernelLib::IVClassValue *vAttrCodeDst = NULL;
-        for (int k=0; k < vClassDst->vrClassValuesCount(); k++){
+        for (int k = 0; k < vClassDst->vrClassValuesCount(); k++){
             vAttrCodeDst = vClassDst->vriClassValueItem(k);
             if (vAttrCodeDst->vrName == vAttrDst->vrFunctionCode)
                 break;
         }
+
         if (vAttrCodeSrc != NULL && vAttrCodeDst != NULL && m_attrFuncRead)
             if (vAttrCodeSrc->vrFunctionCode != vAttrCodeDst->vrFunctionCode)
-                result = result + "\n        Функция чтения: изменена";
+                result += "\n        Функция чтения: изменена";
 
-        for (int k=0; k < vClassSrc->vrClassValuesCount(); k++){
+        for (int k = 0; k < vClassSrc->vrClassValuesCount(); k++){
             vAttrCodeSrc = vClassSrc->vriClassValueItem(k);
             if (vAttrCodeSrc->vrName == vAttrSrc->vrCalcSetFunction)
                 break;
         }
+
         vClassDst = vAttrDst->vrClass();
         vAttrCodeDst = NULL;
         for (int k=0; k < vClassDst->vrClassValuesCount(); k++){
@@ -1209,61 +1296,71 @@ QString StructuresDifference::differenceAttrs(vkernelLib::IVClassValue *vAttrSrc
             if (vAttrCodeDst->vrName == vAttrDst->vrCalcSetFunction)
                 break;
         }
+
         if (vAttrCodeSrc != NULL && vAttrCodeDst != NULL)
-            if (vAttrCodeSrc->vrCalcSetFunction != vAttrCodeDst->vrCalcSetFunction && m_attrFuncWrite)
-                result = result + "\n        Функция записи: изменена";
+            if (vAttrCodeSrc->vrCalcSetFunction
+                    != vAttrCodeDst->vrCalcSetFunction && m_attrFuncWrite)
+                result += "\n        Функция записи: изменена";
 
     } else if (vAttrSrc->vrType == 1) {
-        if (vAttrSrc->vrFunctionCode != vAttrDst->vrFunctionCode && m_attrFuncRead)
-            result = result + "\n        Код функции: изменён";
+        if (vAttrSrc->vrFunctionCode
+                != vAttrDst->vrFunctionCode && m_attrFuncRead)
+            result += "\n        Код функции: изменён";
 
     } else if (vAttrSrc->vrType == 0) {
-        if (m_attrForbidInput && (dataType == ID_STR
+        if (m_attrForbidInput
+               && (dataType == ID_STR
                 || dataType == ID_TEXT
                 || dataType == ID_BOOL
                 || dataType == ID_DATE))
         {
             if (vAttrSrc->vrForbidInput != vAttrDst->vrForbidInput )
-                result = result + QString("\n        Ввод только из списка: ")
+                result += QString("\n        Ввод только из списка: ")
                         .arg(vAttrSrc->vrForbidInput)
                         .arg(vAttrDst->vrForbidInput);
             if (vAttrSrc->vrFunctionCode != vAttrDst->vrFunctionCode)
-                result = result + "\n        Список значений: изменён";
+                result += "\n        Список значений: изменён";
         }
 
-        if (m_attrLimit && (dataType == ID_INT
+        if (m_attrLimit
+               && (dataType == ID_INT
                 || dataType == ID_FLT
                 || dataType == ID_VARIANT))
         {
             if (vAttrSrc->vrFunctionCode != vAttrDst->vrFunctionCode)
-                result = result + "\n        Ограничение: изменено";
+                result += "\n        Ограничение: изменено";
         }
     }
 
     if (vAttrSrc->vrBlocked != vAttrDst->vrBlocked && m_attrBlocked)
-        result = result + QString("\n        Блокировка: %1 != %2")
+        result += QString("\n        Блокировка: %1 != %2")
                 .arg(vAttrSrc->vrBlocked)
                 .arg(vAttrDst->vrBlocked);
 
     if (vAttrSrc->vrMeasureUnit != vAttrDst->vrMeasureUnit && m_attrMeasureUnit)
-        result = result + "\n        ЕИ: "
-                + from_bstr_t(vAttrSrc->vrMeasureUnit) + " != "
+        result += "\n        ЕИ: "
+                + from_bstr_t(vAttrSrc->vrMeasureUnit)
+                + " != "
                 + from_bstr_t(vAttrDst->vrMeasureUnit);
 
-    if (vAttrSrc->vrMeasureEntity != vAttrDst->vrMeasureEntity && m_attrMeasureEntity)
-        result = result + "\n        ЕВ: "
-                + from_bstr_t(vAttrSrc->vrMeasureEntity) + " != "
+    if (vAttrSrc->vrMeasureEntity != vAttrDst->vrMeasureEntity
+            && m_attrMeasureEntity)
+        result +="\n        ЕВ: "
+                + from_bstr_t(vAttrSrc->vrMeasureEntity)
+                + " != "
                 + from_bstr_t(vAttrDst->vrMeasureEntity);   
 
     if (baseClassGuidSrc != baseClassGuidDst && sysFunc && m_attrBaseClass)
-        result = result + "\n        Базовый класс: "
-                + from_guid(baseClassGuidSrc) + " != "
+        result += "\n        Базовый класс: "
+                + from_guid(baseClassGuidSrc)
+                + " != "
                 + from_guid(baseClassGuidDst);
 
     if (vAttrSrc->vrPrecision != vAttrDst->vrPrecision && vAttrSrc->vrType != 1
-            && (dataType == ID_FLT || dataType == ID_VARIANT) && m_attrPrecision)
-        result = result + "\n        Точность:"
-                + QString("%1").arg(vAttrSrc->vrPrecision) + " != "
+           && m_attrPrecision && (dataType == ID_FLT || dataType == ID_VARIANT))
+        result += "\n        Точность:"
+                + QString("%1").arg(vAttrSrc->vrPrecision)
+                + " != "
                 + QString("%1").arg(vAttrDst->vrPrecision);
 
     if (vAttrSrc->vrGroup != vAttrDst->vrGroup && m_attrGroup)
@@ -1295,7 +1392,7 @@ QString StructuresDifference::addingAttr(vkernelLib::IVClassValue *vAttrDst)
     if (vAttrDst->vrType == 1) {
         vkernelLib::IVClass *vClassDst = vAttrDst->vrClass();
         vkernelLib::IVClassValue *vAttrCodeDst = NULL;
-        for (int k=0; k < vClassDst->vrClassValuesCount(); k++){
+        for (int k = 0; k < vClassDst->vrClassValuesCount(); k++){
             vAttrCodeDst = vClassDst->vriClassValueItem(k);
             if (vAttrCodeDst->vrFunctionCode == vAttrDst->vrName
                     || vAttrCodeDst->vrCalcSetFunction == vAttrDst->vrName)
@@ -1304,7 +1401,8 @@ QString StructuresDifference::addingAttr(vkernelLib::IVClassValue *vAttrDst)
     }
 
     vkernelLib::IVClassValue *vInheritedAttrDst = vAttrDst->vrInheritedFrom;
-    GUID baseClassGuidDst = (vInheritedAttrDst != NULL) ? vInheritedAttrDst->vrClassValueID : GUID_NULL;
+    GUID baseClassGuidDst = (vInheritedAttrDst != NULL)
+            ? vInheritedAttrDst->vrClassValueID : GUID_NULL;
 
     if (baseClassGuidDst == GUID_NULL)
         result += this->addingAttrPerms(vAttrDst);
@@ -1321,26 +1419,27 @@ QString StructuresDifference::addingAttr(vkernelLib::IVClassValue *vAttrDst)
             && nameAttr.compare("canchange", Qt::CaseInsensitive)==0
             && nameAttr.startsWith("diag_", Qt::CaseInsensitive)==0;
     if (sysFunc && m_attrId)
-        result = result + "\n        Идентификатор: " + from_guid(vAttrDst->vrClassValueID);
+        result += "\n        Идентификатор: "
+                + from_guid(vAttrDst->vrClassValueID);
 
     GUID dataType = vAttrDst->GetvrDataType();
     if (m_attrDataType)
-         result = result + "\n        Тип данных: " + from_guid(vAttrDst->GetvrDataType());
+         result += "\n        Тип данных: "
+                 + from_guid(vAttrDst->GetvrDataType());
 
     if (m_attrType)
-        result = result + "\n        Тип атрибута: "
+        result += "\n        Тип атрибута: "
                 + QString("%1").arg(vAttrDst->vrType);
 
     if (m_attrScreenName)
-        result = result + "\n        Экранное имя: "
+        result += "\n        Экранное имя: "
                 + from_bstr_t(vAttrDst->vrScreenName);
 
     if (m_attrAliasName) {
         QString aliasName = from_bstr_t(vAttrDst->vrAliasName);
         if (!aliasName.isEmpty())
-        result = result + "\n        Справочники: " + aliasName;
+            result += "\n        Справочники: " + aliasName;
     }
-
 
     if (vAttrDst->vrType == 2) {
         vkernelLib::IVClass *vClassDst = vAttrDst->vrClass();
@@ -1353,7 +1452,7 @@ QString StructuresDifference::addingAttr(vkernelLib::IVClassValue *vAttrDst)
         }
 
         if (vAttrCodeDst != NULL && m_attrFuncRead)
-            result = result + "\n        Функция чтения: изменена";
+            result += "\n        Функция чтения: изменена";
 
         vClassDst = vAttrDst->vrClass();
         vAttrCodeDst = NULL;
@@ -1363,63 +1462,70 @@ QString StructuresDifference::addingAttr(vkernelLib::IVClassValue *vAttrDst)
                 break;
         }
         if (vAttrCodeDst != NULL && m_attrFuncWrite)
-                result = result + "\n        Функция записи: изменена";
+                result += "\n        Функция записи: изменена";
+
     } else if (vAttrDst->vrType == 0) {
-        if (m_attrForbidInput && (dataType == ID_STR
+        if (m_attrForbidInput
+               && from_bstr_t(vAttrDst->vrFunctionCode) != ""
+               && (dataType == ID_STR
                 || dataType == ID_TEXT
                 || dataType == ID_BOOL
-                || dataType == ID_DATE) && from_bstr_t(vAttrDst->vrFunctionCode) != "")
+                || dataType == ID_DATE))
         {
-            result = result + QString("\n        Ввод только из списка: %1")
+            result += QString("\n        Ввод только из списка: %1")
                     .arg(vAttrDst->vrForbidInput);
-            result = result + "\n        Список значений: изменён";
+            result += "\n        Список значений: изменён";
         }
 
-        if (m_attrLimit && (dataType == ID_INT
-                            || dataType == ID_FLT
-                            || dataType == ID_VARIANT))
+        if (m_attrLimit
+                && (dataType == ID_INT
+                 || dataType == ID_FLT
+                 || dataType == ID_VARIANT))
         {
             QString limit = from_bstr_t(vAttrDst->vrFunctionCode);
             QStringList limitList = limit.split("\r\n");
-            if (limitList.count() >=3) {
+            if (limitList.count() >= 3) {
                 bool ok = true;
                 double down, up, step;
                 if (ok) down = limitList.value(0).toDouble(&ok);
                 if (ok) up   = limitList.value(1).toDouble(&ok);
                 if (ok) step = limitList.value(2).toDouble(&ok);
-                if (ok) if (down < up && step >0)
-                    result = result + "\n        Ограничение: добавлено";
+                if (ok)
+                    if (down < up && step >0)
+                        result += "\n        Ограничение: добавлено";
             }
         }
     }
 
     if (m_attrBlocked)
-        result = result + QString("\n        Блокировка: %1")
+        result += QString("\n        Блокировка: %1")
                 .arg(vAttrDst->vrBlocked);
 
     if (m_attrMeasureUnit) {
         QString measureUnit = from_bstr_t(vAttrDst->vrMeasureUnit);
         if (!measureUnit.isEmpty())
-            result = result + "\n        ЕИ: " + measureUnit;
+            result += "\n        ЕИ: " + measureUnit;
     }
 
     if (m_attrMeasureEntity) {
         QString measureEntity = from_bstr_t(vAttrDst->vrMeasureEntity);
         if (!measureEntity.isEmpty())
-            result = result + "\n        ЕВ: " + measureEntity;
+            result += "\n        ЕВ: " + measureEntity;
     }
 
     if (sysFunc && m_attrBaseClass)
-        result = result + "\n        Базовый класс: "
+        result += "\n        Базовый класс: "
                 + from_guid(baseClassGuidDst);
 
-    if (vAttrDst->vrType != 1  && (dataType == ID_FLT || dataType == ID_VARIANT) && m_attrPrecision)
-        result = result + "\n        Точность: " + QString("%1").arg(vAttrDst->vrPrecision);
+    if (vAttrDst->vrType != 1 && m_attrPrecision
+            && (dataType == ID_FLT || dataType == ID_VARIANT))
+        result += "\n        Точность: "
+                + QString("%1").arg(vAttrDst->vrPrecision);
 
     if (m_attrGroup) {
         QString group = from_bstr_t(vAttrDst->vrGroup);
         if (!group.isEmpty())
-            result = result + "\n        Группа: " + group;
+            result += "\n        Группа: " + group;
     }
 
     result += addingPropAttrs(vAttrDst);
@@ -1443,8 +1549,11 @@ QString StructuresDifference::differencePropAttrs(vkernelLib::IVClassValue *vAtt
         _variant_t valueDst = vPropsDst->vrPropVal[nameSrc];
         _variant_t valueSrc = vPropsSrc->vrPropVal[nameSrc];
         if (valueSrc != valueDst)
-            result = result + "\n        Свойство \"" + from_bstr_t(nameSrc) +"\" изменено: "
-                    + from_variant_t(valueSrc).toString() + " != "
+            result += "\n        Свойство \""
+                    + from_bstr_t(nameSrc)
+                    +"\" изменено: "
+                    + from_variant_t(valueSrc).toString()
+                    + " != "
                     + from_variant_t(valueDst).toString();
     }
     return result;
@@ -1452,53 +1561,61 @@ QString StructuresDifference::differencePropAttrs(vkernelLib::IVClassValue *vAtt
 
 QString StructuresDifference::addingPropAttrs(vkernelLib::IVClassValue *vAttrDst)
 {
-    if (!m_attrProp) return "";
+    if (!m_attrProp)
+        return "";
 
     QString result;
     vkernelLib::IVProperties  *vPropsDst = vAttrDst->vrProperties();
-    for (int i=0; i<vPropsDst->vrCount(); i++) {
+    for (int i = 0; i < vPropsDst->vrCount(); i++) {
         BSTR nameDst;
         VARIANT tmp;
         vPropsDst->vrItem(i, &nameDst, &tmp);
         _variant_t valueDst = vPropsDst->vrPropVal[nameDst];
-        result = result + "\n        Добавлено свойство \"" + from_bstr_t(nameDst) +"\": "
-                    + from_variant_t(valueDst).toString();
+        result += "\n        Добавлено свойство \""
+                + from_bstr_t(nameDst)
+                +"\": "
+                + from_variant_t(valueDst).toString();
     }
     return result;
 }
 
-QString StructuresDifference::differenceClasses(vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst) {
+QString StructuresDifference::differenceClasses(
+        vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst) {
 
     QString result;
     if (vClassDst == NULL) {
-        result =  result + "\nУдалён класс: "+ from_bstr_t(vClassSrc->vrName);
+        result += "\n\nУдалён класс: "+ from_bstr_t(vClassSrc->vrName);
         return result;
     }
 
     result += this->differenceClassPerms(vClassSrc, vClassDst);
 
     if (vClassSrc->vrClassID != vClassDst->vrClassID && m_classId) {
-        result = result + "\n    Идентификатор: "
-                + from_guid(vClassSrc->vrClassID) + "!="
+        result += "\n    Идентификатор: "
+                + from_guid(vClassSrc->vrClassID)
+                + "!="
                 + from_guid(vClassDst->vrClassID);
     }
 
     if (vClassSrc->vrBlocked != vClassDst->vrBlocked)
-        result = result + QString("\n    Блокировка: %1 != %2")
+        result += QString("\n    Блокировка: %1 != %2")
                 .arg(vClassSrc->vrBlocked)
                 .arg(vClassDst->vrBlocked);
 
     if (vClassSrc->vrScreenName != vClassDst->vrScreenName && m_classScreenName)
-        result = result + "\n    Экранноё имя: "
-                + from_bstr_t(vClassSrc->vrScreenName) + "!="
+        result += "\n    Экранноё имя: "
+                + from_bstr_t(vClassSrc->vrScreenName)
+                + "!="
                 + from_bstr_t(vClassDst->vrScreenName);
 
     vkernelLib::IVClass *vBaseClassSrc = vClassSrc->vrBaseClass;
     vkernelLib::IVClass *vBaseClassDst = vClassDst->vrBaseClass;
-    GUID baseClassGuidSrc = (vBaseClassSrc != NULL) ? vBaseClassSrc->vrClassID : GUID_NULL;
-    GUID baseClassGuidDst = (vBaseClassDst != NULL) ? vBaseClassDst->vrClassID : GUID_NULL;
+    GUID baseClassGuidSrc = (vBaseClassSrc != NULL)
+            ? vBaseClassSrc->vrClassID : GUID_NULL;
+    GUID baseClassGuidDst = (vBaseClassDst != NULL)
+            ? vBaseClassDst->vrClassID : GUID_NULL;
     if (baseClassGuidSrc != baseClassGuidDst && m_classBaseClass)
-        result = result + "\n        Базовый класс: "
+        result += "\n        Базовый класс: "
                 + from_guid(baseClassGuidSrc) + " != "
                 + from_guid(baseClassGuidDst);
 
@@ -1510,10 +1627,11 @@ QString StructuresDifference::differenceClasses(vkernelLib::IVClass *vClassSrc, 
             || m_attrForbidInput || m_attrBaseClass || m_attrPrecision
             || m_attrLimit || m_attrGroup || m_attrProp || m_attrPerms)
     {
-        for (int j=0; j<vClassSrc->vrClassValuesCount(); j++){
+        for (int j = 0; j < vClassSrc->vrClassValuesCount(); j++){
             vkernelLib::IVClassValue *vAttrSrc = vClassSrc->vriClassValueItem(j);
-            for (int k=0; k<vClassDst->vrClassValuesCount(); k++){
-                vkernelLib::IVClassValue *vAttrDst = vClassDst->vriClassValueItem(k);
+            for (int k = 0; k<vClassDst->vrClassValuesCount(); k++){
+                vkernelLib::IVClassValue *vAttrDst
+                        = vClassDst->vriClassValueItem(k);
                 if (vAttrSrc->vrName == vAttrDst->vrName) {
                     result += differenceAttrs(vAttrSrc, vAttrDst);
                     break;
@@ -1524,8 +1642,9 @@ QString StructuresDifference::differenceClasses(vkernelLib::IVClass *vClassSrc, 
 
         for (int j=0; j<vClassDst->vrClassValuesCount(); j++){
             vkernelLib::IVClassValue *vAttrDst = vClassDst->vriClassValueItem(j);
-            for (int k=0; k<vClassSrc->vrClassValuesCount(); k++){
-                vkernelLib::IVClassValue *vAttrSrc = vClassSrc->vriClassValueItem(k);
+            for (int k = 0; k<vClassSrc->vrClassValuesCount(); k++){
+                vkernelLib::IVClassValue *vAttrSrc
+                        = vClassSrc->vriClassValueItem(k);
                 if (vAttrSrc->vrName == vAttrDst->vrName) {
                     break;
                 } else if (k == vClassSrc->vrClassValuesCount()-1)
@@ -1543,17 +1662,18 @@ QString StructuresDifference::addingClass(vkernelLib::IVClass *vClassDst)
 {
     QString result;
 
-    result =  result + "\n\nДобавлен класс: "+ from_bstr_t(vClassDst->vrName);
+    result = "\n\nДобавлен класс: "+ from_bstr_t(vClassDst->vrName);
     if (m_classId)
-        result = result + "\n    Идентификатор: " + from_guid(vClassDst->vrClassID);
+        result += "\n    Идентификатор: " + from_guid(vClassDst->vrClassID);
     if (m_classBlocked)
-        result = result + QString("\n    Блокировка: %1").arg(vClassDst->vrBlocked);
+        result += QString("\n    Блокировка: %1").arg(vClassDst->vrBlocked);
     if (m_classScreenName)
-        result = result + "\n    Экранноё имя: " + from_bstr_t(vClassDst->vrScreenName);
+        result += "\n    Экранноё имя: " + from_bstr_t(vClassDst->vrScreenName);
     if (m_classBaseClass) {
         vkernelLib::IVClass *vBaseClassDst = vClassDst->vrBaseClass;
-        GUID baseClassGuidDst = (vBaseClassDst != NULL) ? vBaseClassDst->vrClassID : GUID_NULL;
-        result = result + "\n    Базовый класс: " + from_guid(baseClassGuidDst);
+        GUID baseClassGuidDst = (vBaseClassDst != NULL)
+                ? vBaseClassDst->vrClassID : GUID_NULL;
+        result += "\n    Базовый класс: " + from_guid(baseClassGuidDst);
     }
     result += this->addingClassPerms(vClassDst);
     result += this->addingClassLinks(vClassDst);
@@ -1563,37 +1683,44 @@ QString StructuresDifference::addingClass(vkernelLib::IVClass *vClassDst)
             || m_attrBlocked || m_attrMeasureUnit || m_attrMeasureEntity
             || m_attrForbidInput || m_attrBaseClass || m_attrPrecision
             || m_attrLimit || m_attrGroup || m_attrProp || m_attrPerms)
-
+    {
         for (int k=0; k<vClassDst->vrClassValuesCount(); k++){
             vkernelLib::IVClassValue *vAttrDst = vClassDst->vriClassValueItem(k);
             result += addingAttr(vAttrDst);
         }
+    }
 
     return result;
-
-    return "";
 }
 
-QString StructuresDifference::differenceClassLinks(vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst)
+QString StructuresDifference::differenceClassLinks(
+        vkernelLib::IVClass *vClassSrc, vkernelLib::IVClass *vClassDst)
 {
-    if (!m_classChild) return "";
+    if (!m_classChild)
+        return "";
 
     QString result;
     for (int i=0; i < vClassSrc->vrChildsCount(); i++){
-        vkernelLib::IVClass *vClassChildSrc = vClassSrc->vriChildClassItem(i);
-        vkernelLib::IVClass *vClassChildDst = vClassDst->vrnChildClassItem(vClassChildSrc->vrName);
+        vkernelLib::IVClass *vClassChildSrc
+                = vClassSrc->vriChildClassItem(i);
+        vkernelLib::IVClass *vClassChildDst
+                = vClassDst->vrnChildClassItem(vClassChildSrc->vrName);
         if (vClassChildDst==NULL)
             result = result + "\n    Удалена связь: "
-                    + from_bstr_t(vClassSrc->vrName) + " <- "
+                    + from_bstr_t(vClassSrc->vrName)
+                    + " <- "
                     + from_bstr_t(vClassChildSrc->vrName);
     }
 
     for (int i=0; i < vClassDst->vrChildsCount(); i++){
-        vkernelLib::IVClass *vClassChildDst = vClassDst->vriChildClassItem(i);
-        vkernelLib::IVClass *vClassChildSrc = vClassSrc->vrnChildClassItem(vClassChildDst->vrName);
-        if (vClassChildSrc==NULL)
+        vkernelLib::IVClass *vClassChildDst
+                = vClassDst->vriChildClassItem(i);
+        vkernelLib::IVClass *vClassChildSrc
+                = vClassSrc->vrnChildClassItem(vClassChildDst->vrName);
+        if (vClassChildSrc == NULL)
             result = result + "\n    Добавлена связь: "
-                    + from_bstr_t(vClassDst->vrName) + " <- "
+                    + from_bstr_t(vClassDst->vrName)
+                    + " <- "
                     + from_bstr_t(vClassChildDst->vrName);
     }
 
@@ -1602,31 +1729,36 @@ QString StructuresDifference::differenceClassLinks(vkernelLib::IVClass *vClassSr
 
 QString StructuresDifference::addingClassLinks(vkernelLib::IVClass *vClassDst)
 {
-    if (!m_classChild) return "";
+    if (!m_classChild)
+        return "";
 
-    QString result;
+    QString result = "";
     for (int i=0; i < vClassDst->vrChildsCount(); i++){
         vkernelLib::IVClass *vClassChildDst = vClassDst->vriChildClassItem(i);
-        result = result + "\n    Добавлена связь: "
-                    + from_bstr_t(vClassDst->vrName) + " <- "
-                    + from_bstr_t(vClassChildDst->vrName);
+        result += "\n    Добавлена связь: "
+                + from_bstr_t(vClassDst->vrName)
+                + " <- "
+                + from_bstr_t(vClassChildDst->vrName);
     }
     return result;
 }
 
-QString StructuresDifference::differenceModels(vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst) {
+QString StructuresDifference::differenceModels(
+        vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst) {
     QString result;
 
     vkernelLib::IVClassVector *vClassVectorSrc = vModelSrc->vrGetClassVector();
     vkernelLib::IVClassVector *vClassVectorDst = vModelDst->vrGetClassVector();
     for (int i=0; i<vClassVectorSrc->vrCount(); i++){
         vkernelLib::IVClass *vClassSrc = vClassVectorSrc->vrItem(i);
-        vkernelLib::IVClass *vClassDst = vClassVectorDst->vrLocate(vClassSrc->vrName);
+        vkernelLib::IVClass *vClassDst = vClassVectorDst->vrLocate(
+                    vClassSrc->vrName);
         result += differenceClasses(vClassSrc, vClassDst);
     }
     for (int i=0; i<vClassVectorDst->vrCount(); i++){
         vkernelLib::IVClass *vClassDst = vClassVectorDst->vrItem(i);
-        vkernelLib::IVClass *vClassSrc = vClassVectorSrc->vrLocate(vClassDst->vrName);
+        vkernelLib::IVClass *vClassSrc = vClassVectorSrc->vrLocate(
+                    vClassDst->vrName);
         if (vClassSrc == NULL)
             result += addingClass(vClassDst);
     }
@@ -1635,12 +1767,14 @@ QString StructuresDifference::differenceModels(vkernelLib::IVModel *vModelSrc, v
     vkernelLib::IVObjectVector *vObjsDst = vModelDst->vrGetObjVector();
     for (int i=0; i<vObjsSrc->vrObjectsCount(); i++) {
          vkernelLib::IVObject *vObjectSrc = vObjsSrc->vrItem(i);
-         vkernelLib::IVObject *vObjectDst = vObjsDst->vrGetObjByStrID(vObjectSrc->vrObjStrID());
+         vkernelLib::IVObject *vObjectDst = vObjsDst->vrGetObjByStrID(
+                     vObjectSrc->vrObjStrID());
          result += differenceObjects(vObjectSrc, vObjectDst);
     }
     for (int i=0; i<vObjsDst->vrObjectsCount(); i++) {
          vkernelLib::IVObject *vObjectDst = vObjsDst->vrItem(i);
-         vkernelLib::IVObject *vObjectSrc = vObjsSrc->vrGetObjByStrID(vObjectDst->vrObjStrID());
+         vkernelLib::IVObject *vObjectSrc = vObjsSrc->vrGetObjByStrID(
+                     vObjectDst->vrObjStrID());
          result += addingObjects(vObjectSrc, vObjectDst);
     }
 
@@ -1649,53 +1783,67 @@ QString StructuresDifference::differenceModels(vkernelLib::IVModel *vModelSrc, v
 
 QString StructuresDifference::differenceFilters (vkernelLib::IVModel *vModelSrc, vkernelLib::IVModel *vModelDst) {
 
-    if (!m_classFilter) return "";
+    if (!m_classFilter)
+        return "";
 
     QString result;
 
     vkernelLib::IVClassVector *vClassVectorSrc = vModelSrc->vrGetClassVector();
     vkernelLib::IVClassVector *vClassVectorDst = vModelDst->vrGetClassVector();
 
-    vkernelLib::IVFilterVector *vFilterVectorSrc = vClassVectorSrc->vrFilterVector();
-    vkernelLib::IVFilterVector *vFilterVectorDst = vClassVectorDst->vrFilterVector();
+    vkernelLib::IVFilterVector *vFilterVectorSrc
+            = vClassVectorSrc->vrFilterVector();
+    vkernelLib::IVFilterVector *vFilterVectorDst
+            = vClassVectorDst->vrFilterVector();
 
     for (int i=0; i<vFilterVectorSrc->vrFiltersCount(); i++){
         _bstr_t filterSrc = vFilterVectorSrc->vrFilterName(i);
 
         if (vFilterVectorDst->vrLocateFilter(filterSrc)) {
             QString filterResult("");
-            for (int j = 0; j < vFilterVectorSrc->vrConstrainsCount(filterSrc); j++) {
+            for (int j = 0;
+                 j < vFilterVectorSrc->vrConstrainsCount(filterSrc); j++)
+            {
                 _bstr_t classSrc = vFilterVectorSrc->vrConstrains(filterSrc,j);
                 if (!(vFilterVectorDst->vrLocateConstraint(filterSrc, classSrc)))
-                    filterResult =  filterResult + "\n    Удалён класс: "+ from_bstr_t(classSrc);
+                    filterResult += "\n    Удалён класс: "
+                                  + from_bstr_t(classSrc);
             }
             if (!filterResult.isEmpty())
-                result = result + "\n\nФильтр: " +  from_bstr_t(filterSrc);
+                result += "\n\nФильтр: " +  from_bstr_t(filterSrc);
+
             result += filterResult;
         } else {
-            result =  result + "\nУдалён фильтр: "+ from_bstr_t(filterSrc);
+            result += "\nУдалён фильтр: "+ from_bstr_t(filterSrc);
         }
 
     }
 
-    for (int i=0; i<vFilterVectorDst->vrFiltersCount(); i++){
+    for (int i = 0; i < vFilterVectorDst->vrFiltersCount(); i++){
         _bstr_t filterDst = vFilterVectorDst->vrFilterName(i);
 
-        if (vFilterVectorSrc->vrLocateFilter(filterDst)) {
+        if (vFilterVectorSrc->vrLocateFilter(filterDst))
+        {
             QString filterResult("");
-            for (int j = 0; j < vFilterVectorDst->vrConstrainsCount(filterDst); j++) {
+            for (int j = 0;
+                 j < vFilterVectorDst->vrConstrainsCount(filterDst); j++)
+            {
                 _bstr_t classDst = vFilterVectorDst->vrConstrains(filterDst,j);
                 if (!(vFilterVectorSrc->vrLocateConstraint(filterDst, classDst)))
-                    filterResult =  filterResult + "\n    Добавлен класс: "+ from_bstr_t(classDst);
+                    filterResult += "\n    Добавлен класс: "
+                                 + from_bstr_t(classDst);
             }
             if (!filterResult.isEmpty())
-                result = result + "\n\nФильтр: " +  from_bstr_t(filterDst);
+                result += "\n\nФильтр: " +  from_bstr_t(filterDst);
+
             result += filterResult;
         } else {
-            result =  result + "\n\nДобавлен фильтр: "+ from_bstr_t(filterDst);
-            for (int j = 0; j < vFilterVectorDst->vrConstrainsCount(filterDst); j++) {
+            result += "\n\nДобавлен фильтр: " + from_bstr_t(filterDst);
+            for (int j = 0;
+                 j < vFilterVectorDst->vrConstrainsCount(filterDst); j++)
+            {
                 _bstr_t classDst = vFilterVectorDst->vrConstrains(filterDst,j);
-                result =  result +  "\n    Добавлен класс: "+ from_bstr_t(classDst);
+                result += "\n    Добавлен класс: "+ from_bstr_t(classDst);
             }
         }
 
