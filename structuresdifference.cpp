@@ -49,46 +49,45 @@ StructuresDifference::StructuresDifference(QObject *parent) : QObject(parent)
                            RPC_C_IMP_LEVEL_DELEGATE, NULL, 0, NULL);
     uniRef = NULL;
 
-    m_classId = true;
-    m_classBlocked = true;
+    m_classId         = true;
+    m_classBlocked    = true;
     m_classScreenName = true;
     m_classBaseClass  = true;
-    m_classChild = true;
-    m_classFilter = true;
-    m_classPerms = true;
-    m_permGroup = true;
+    m_classChild      = true;
+    m_classFilter     = true;
+    m_classPerms      = true;
+    m_permGroup       = true;
 
-    m_attrId = true;
-    m_attrDataType = true;
-    m_attrType = true;
-    m_attrScreenName = true;
-    m_attrAliasName = true;
-    m_attrFuncRead = true;
-    m_attrFuncWrite = true;
-    m_attrBlocked = true;
-    m_attrMeasureUnit = true;
+    m_attrId            = true;
+    m_attrDataType      = true;
+    m_attrType          = true;
+    m_attrScreenName    = true;
+    m_attrAliasName     = true;
+    m_attrFuncRead      = true;
+    m_attrFuncWrite     = true;
+    m_attrBlocked       = true;
+    m_attrMeasureUnit   = true;
     m_attrMeasureEntity = true;
-    m_attrForbidInput = true;
-    m_attrLimit = true;
-    m_attrBaseClass = true;
-    m_attrPrecision = true;
-    m_attrGroup = true;
-    m_attrProp = true;
-    m_attrPerms = true;
-    m_attrInherited = true;
+    m_attrForbidInput   = true;
+    m_attrLimit         = true;
+    m_attrBaseClass     = true;
+    m_attrPrecision     = true;
+    m_attrGroup         = true;
+    m_attrProp          = true;
+    m_attrPerms         = true;
+    m_attrInherited     = true;
 
-    m_objId = true;
-    m_objOwnerId = true;
+    m_objId         = true;
+    m_objOwnerId    = true;
     m_objWasChanged = true;
-    m_objReadOnly = true;
-    m_objChilds = true;
+    m_objReadOnly   = true;
+    m_objChilds     = true;
 
-    m_objAttrName = true;
-    m_objAttrValue = true;
+    m_objAttrName        = true;
+    m_objAttrValue       = true;
     m_objAttrMeasureUnit = true;
-    m_objAttrPrecision = true;
-    m_objAttrOwnerId = true;
-
+    m_objAttrPrecision   = true;
+    m_objAttrOwnerId     = true;
 }
 
 bool StructuresDifference::connect()
@@ -652,7 +651,7 @@ bool StructuresDifference::differenceIDispatchs(
                      || iObjSrc->vrLengthwiseSmallerThread
                              != iObjDst->vrLengthwiseSmallerThread
                      || iObjSrc->vrToleranceShiftBasePlane
-                              != iObjDst->vrToleranceShiftBasePlane
+                             != iObjDst->vrToleranceShiftBasePlane
              )
                   return true;
         } else return true;
