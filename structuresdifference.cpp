@@ -82,7 +82,8 @@ QString dataTypeGuidToString(GUID guid) {
     else if (guid == ID_DEFLECTEDDOUBLE)
         dataType = QString("DeflectedDouble");
     else
-        dataType = QString("Неизвестный тип данных") + QString(" (%1)").arg(from_guid(guid));
+        dataType = QString("Неизвестный тип данных")
+                + QString(" (%1)").arg(from_guid(guid));
 
     return dataType;
 }
@@ -484,9 +485,9 @@ QString StructuresDifference::differenceObjectLinks(
 
     vkernelLib::IVIterator *vIterSrc;
     vkernelLib::IVIterator *vIterDst;
-    if (vObjsSrc->raw_vrCreateIterator(L"", vObjectSrc, true, &vIterSrc)!=S_OK)
+    if (vObjsSrc->raw_vrCreateIterator(L"", vObjectSrc, true, &vIterSrc)!= S_OK)
         return result;
-    if (vObjsDst->raw_vrCreateIterator(L"", vObjectDst, true, &vIterDst)!=S_OK)
+    if (vObjsDst->raw_vrCreateIterator(L"", vObjectDst, true, &vIterDst)!= S_OK)
         return "\n    Дочерние объекты удалены";
 
 
@@ -523,7 +524,7 @@ QString StructuresDifference::addingObjectLinks(vkernelLib::IVObject *vObjectDst
     vkernelLib::IVObjectVector *vObjsDst = vObjectDst->vrObjectsVector();
 
     vkernelLib::IVIterator *vIterDst;
-    if (vObjsDst->raw_vrCreateIterator(L"", vObjectDst, true, &vIterDst)!=S_OK)
+    if (vObjsDst->raw_vrCreateIterator(L"", vObjectDst, true, &vIterDst)!= S_OK)
         return "";
 
     for (bool flagDst = vIterDst->vrFirst();
@@ -1404,13 +1405,15 @@ QString StructuresDifference::differenceAttrs(
 
     if (baseClassGuidSrc != baseClassGuidDst && sysFunc && m_attrBaseClass)
         result += "\n        Базовый класс: "
-                + from_guid(baseClassGuidSrc)
-                + " != "
-                + from_guid(baseClassGuidDst);
+                + (vInheritedAttrSrc ? vInheritedAttrSrc->vrClass()->vrName: "Отсутствует")
+                + " (" + from_guid(baseClassGuidSrc)
+                + ") != "
+                + (vInheritedAttrDst ? vInheritedAttrDst->vrClass()->vrName : "Отсутствует")
+                + " (" + from_guid(baseClassGuidDst) + ")";
 
     if (vAttrSrc->vrPrecision != vAttrDst->vrPrecision && vAttrSrc->vrType != 1
            && m_attrPrecision && (dataType == ID_FLT || dataType == ID_VARIANT))
-        result += "\n        Точность:"
+        result += "\n        Точность: "
                 + QString("%1").arg(vAttrSrc->vrPrecision)
                 + " != "
                 + QString("%1").arg(vAttrDst->vrPrecision);
@@ -1567,7 +1570,8 @@ QString StructuresDifference::addingAttr(vkernelLib::IVClassValue *vAttrDst)
 
     if (sysFunc && m_attrBaseClass)
         result += "\n        Базовый класс: "
-                + from_guid(baseClassGuidDst);
+                + (vInheritedAttrDst ? vInheritedAttrDst->vrClass()->vrName : "Отсутствует")
+                + " (" + from_guid(baseClassGuidDst) + ")";
 
     if (vAttrDst->vrType != 1 && m_attrPrecision
             && (dataType == ID_FLT || dataType == ID_VARIANT))
@@ -1587,7 +1591,8 @@ QString StructuresDifference::addingAttr(vkernelLib::IVClassValue *vAttrDst)
     return result;
 }
 
-QString StructuresDifference::differencePropAttrs(vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
+QString StructuresDifference::differencePropAttrs(
+        vkernelLib::IVClassValue *vAttrSrc, vkernelLib::IVClassValue *vAttrDst)
 {
     if (!m_attrProp) return "";
 
@@ -1668,8 +1673,10 @@ QString StructuresDifference::differenceClasses(
             ? vBaseClassDst->vrClassID : GUID_NULL;
     if (baseClassGuidSrc != baseClassGuidDst && m_classBaseClass)
         result += "\n        Базовый класс: "
-                + from_guid(baseClassGuidSrc) + " != "
-                + from_guid(baseClassGuidDst);
+                + (vBaseClassSrc ? vBaseClassSrc->vrName : "Отсутствует")
+                + " (" + from_guid(baseClassGuidSrc) + ") != ("
+                + (vBaseClassDst ? vBaseClassDst->vrName : "Отсутствует")
+                + " (" + from_guid(baseClassGuidDst) + ")";
 
     result += differenceClassLinks(vClassSrc, vClassDst);
 
@@ -1725,7 +1732,9 @@ QString StructuresDifference::addingClass(vkernelLib::IVClass *vClassDst)
         vkernelLib::IVClass *vBaseClassDst = vClassDst->vrBaseClass;
         GUID baseClassGuidDst = (vBaseClassDst != NULL)
                 ? vBaseClassDst->vrClassID : GUID_NULL;
-        result += "\n    Базовый класс: " + from_guid(baseClassGuidDst);
+        result += "\n    Базовый класс: "
+                + (vBaseClassDst ? vBaseClassDst->vrName : "Отсутствует")
+                + " (" + from_guid(baseClassGuidDst) + ")";
     }
     result += this->addingClassPerms(vClassDst);
     result += this->addingClassLinks(vClassDst);
