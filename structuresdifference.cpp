@@ -44,44 +44,47 @@ const int funcAttrPermMask = vkernelLib::SF_EXE;
 
 QString dataTypeGuidToString(GUID guid) {
 
+    QString dataType;
     if (guid == ID_INT)
-        return QString("Integer");
+        dataType = QString("Integer");
     else if (guid == ID_FLT)
-        return QString("Float");
+        dataType = QString("Float");
     else if (guid == ID_STR)
-        return QString("String");
+        dataType = QString("String");
     else if (guid == ID_TEXT)
-        return QString("Text");
+        dataType = QString("Text");
     else if (guid == ID_BOOL)
-        return QString("Boolean");
+        dataType = QString("Boolean");
     else if (guid == ID_DATE)
-        return QString("Date");
+        dataType = QString("Date");
     else if (guid == ID_NULL)
-        return QString("NULL");
+        dataType = QString("NULL");
     else if (guid == ID_FILE)
-        return QString("File");
+        dataType = QString("File");
     else if (guid == ID_STREAM)
-        return QString("Stream");
+        dataType = QString("Stream");
     else if (guid == ID_DIM)
-        return QString("Dimension");
+        dataType = QString("Dimension");
     else if (guid == ID_ROUGHNESS)
-        return QString("Roughness");
+        dataType = QString("Roughness");
     else if (guid == ID_ANGLE)
-        return QString("Angle");
+        dataType = QString("Angle");
     else if (guid == ID_MARKER)
-        return QString("Marker");
+        dataType = QString("Marker");
     else if (guid == ID_VARIANT)
-        return QString("Variant");
+        dataType = QString("Variant");
     else if (guid == ID_THREAD)
-        return QString("Thread");
+        dataType = QString("Thread");
     else if (guid == ID_OBJECTSET)
-        return QString("ObjectSet");
+        dataType = QString("ObjectSet");
     else if (guid == ID_FORMTOLERANCE)
-        return QString("FormTolerance");
+        dataType = QString("FormTolerance");
     else if (guid == ID_DEFLECTEDDOUBLE)
-        return QString("DeflectedDouble");
+        dataType = QString("DeflectedDouble");
+    else
+        dataType = QString("Неизвестный тип данных") + QString(" (%1)").arg(from_guid(guid));
 
-    return QString("Неизвестный тип данных");
+    return dataType;
 }
 
 QString typeAttrToString(int typeAttr) {
@@ -89,7 +92,7 @@ QString typeAttrToString(int typeAttr) {
         case 0:  return QString("Простой");
         case 1:  return QString("Функция");
         case 2:  return QString("Вычисляемый");
-        default: return QString("Неизвестный тип");
+        default: return QString("Неизвестный тип (%1)").arg(typeAttr);
     }
 }
 
