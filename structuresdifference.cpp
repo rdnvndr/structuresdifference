@@ -42,6 +42,57 @@ const int calcAttrPermMask = vkernelLib::SF_WRT
 
 const int funcAttrPermMask = vkernelLib::SF_EXE;
 
+QString dataTypeGuidToString(GUID guid) {
+
+    if (guid == ID_INT)
+        return QString("Integer");
+    else if (guid == ID_FLT)
+        return QString("Float");
+    else if (guid == ID_STR)
+        return QString("String");
+    else if (guid == ID_TEXT)
+        return QString("Text");
+    else if (guid == ID_BOOL)
+        return QString("Boolean");
+    else if (guid == ID_DATE)
+        return QString("Date");
+    else if (guid == ID_NULL)
+        return QString("NULL");
+    else if (guid == ID_FILE)
+        return QString("File");
+    else if (guid == ID_STREAM)
+        return QString("Stream");
+    else if (guid == ID_DIM)
+        return QString("Dimension");
+    else if (guid == ID_ROUGHNESS)
+        return QString("Roughness");
+    else if (guid == ID_ANGLE)
+        return QString("Angle");
+    else if (guid == ID_MARKER)
+        return QString("Marker");
+    else if (guid == ID_VARIANT)
+        return QString("Variant");
+    else if (guid == ID_THREAD)
+        return QString("Thread");
+    else if (guid == ID_OBJECTSET)
+        return QString("ObjectSet");
+    else if (guid == ID_FORMTOLERANCE)
+        return QString("FormTolerance");
+    else if (guid == ID_DEFLECTEDDOUBLE)
+        return QString("DeflectedDouble");
+
+    return QString("Неизвестный тип данных");
+}
+
+QString typeAttrToString(int typeAttr) {
+    switch (typeAttr) {
+        case 0:  return QString("Простой");
+        case 1:  return QString("Функция");
+        case 2:  return QString("Вычисляемый");
+        default: return QString("Неизвестный тип");
+    }
+}
+
 StructuresDifference::StructuresDifference(QObject *parent) : QObject(parent)
 {
     ::CoInitialize(NULL);
@@ -49,14 +100,14 @@ StructuresDifference::StructuresDifference(QObject *parent) : QObject(parent)
                            RPC_C_IMP_LEVEL_DELEGATE, NULL, 0, NULL);
     uniRef = NULL;
 
-    m_classId         = true;
-    m_classBlocked    = true;
-    m_classScreenName = true;
     m_classBaseClass  = true;
+    m_classBlocked    = true;
     m_classChild      = true;
     m_classFilter     = true;
     m_classPerms      = true;
+    m_classScreenName = true;
     m_permGroup       = true;
+    m_classId         = true;
 
     m_attrId            = true;
     m_attrDataType      = true;
@@ -1239,14 +1290,13 @@ QString StructuresDifference::differenceAttrs(
     GUID dataType = vAttrSrc->GetvrDataType();
     if (vAttrSrc->GetvrDataType() !=  vAttrDst->GetvrDataType() && m_attrDataType)
          result += "\n        Тип данных: "
-                 + from_guid(vAttrSrc->GetvrDataType()) + " != "
-                 + from_guid(vAttrDst->GetvrDataType());
+                 + dataTypeGuidToString(vAttrSrc->GetvrDataType()) + " != "
+                 + dataTypeGuidToString(vAttrDst->GetvrDataType());
 
     if (vAttrSrc->vrType != vAttrDst->vrType && m_attrType)
         result += "\n        Тип атрибута: "
-                + QString("%1 != %2")
-                .arg(vAttrSrc->vrType)
-                .arg(vAttrDst->vrType);
+                + typeAttrToString(vAttrSrc->vrType) + " != "
+                + typeAttrToString(vAttrDst->vrType);
 
     if (vAttrSrc->vrScreenName != vAttrDst->vrScreenName && m_attrScreenName)
         result += "\n        Экранное имя: "
@@ -1424,11 +1474,11 @@ QString StructuresDifference::addingAttr(vkernelLib::IVClassValue *vAttrDst)
     GUID dataType = vAttrDst->GetvrDataType();
     if (m_attrDataType)
          result += "\n        Тип данных: "
-                 + from_guid(vAttrDst->GetvrDataType());
+                 + dataTypeGuidToString(vAttrDst->GetvrDataType());
 
     if (m_attrType)
         result += "\n        Тип атрибута: "
-                + QString("%1").arg(vAttrDst->vrType);
+                + typeAttrToString(vAttrDst->vrType);
 
     if (m_attrScreenName)
         result += "\n        Экранное имя: "

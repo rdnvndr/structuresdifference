@@ -80,6 +80,7 @@ qch/*
 # --------
 bin
 build
+distrib
 
 # Out file
 # ---------
