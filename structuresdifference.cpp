@@ -438,20 +438,19 @@ QString StructuresDifference::differenceObjects(
 QString StructuresDifference::addingObjects(
         vkernelLib::IVObject *vObjectSrc, vkernelLib::IVObject *vObjectDst)
 {
-    if (!m_objAttrName || vObjectSrc == NULL)
-        return "";
-
     QString result = "";
 
-    result += "\n\nДобавлен объект класса \""
-            + from_bstr_t(vObjectDst->vrClass()->vrName)
-            + "\": ";
-    result += "\n    Идентификатор: "
-            + from_bstr_t(vObjectDst->vrObjStrID());
-    result += "\n    Владелец: "
-            + from_bstr_t(vObjectDst->vrOwnerID);
-
-    result += addingObjectLinks(vObjectDst);
+    if (vObjectSrc == NULL) {
+        result += "\n\nДобавлен объект класса \""
+                + from_bstr_t(vObjectDst->vrClass()->vrName)
+                + "\": ";
+        result += "\n    Идентификатор: "
+                + from_bstr_t(vObjectDst->vrObjStrID());
+        result += "\n    Владелец: "
+                + from_bstr_t(vObjectDst->vrOwnerID);
+        result += addingObjectLinks(vObjectDst);
+        return result;
+    }
 
     if (m_objAttrName || m_objAttrValue || m_objAttrMeasureUnit
             || m_objAttrPrecision || m_objAttrOwnerId)
